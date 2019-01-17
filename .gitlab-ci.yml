@@ -57,7 +57,7 @@ stages:
     PACKAGE: "rc_genicam_camera"
   script:
     - mkdir build && cd build
-    - cmake ../${PACKAGE}
+    - cmake ..
     - make -j 4
     - CTEST_OUTPUT_ON_FAILURE=1 make test
 
@@ -89,7 +89,7 @@ stages:
     PACKAGE: "rc_genicam_camera"
   script:
     - mkdir build && cd build
-    - cmake -DCATKIN_BUILD_BINARY_PACKAGE="1" -DCMAKE_INSTALL_PREFIX="/opt/ros/$ROS_DISTRO" -DCMAKE_PREFIX_PATH="/opt/ros/$ROS_DISTRO" -DCMAKE_BUILD_TYPE=Release ../${PACKAGE}
+    - cmake -DCATKIN_BUILD_BINARY_PACKAGE="1" -DCMAKE_INSTALL_PREFIX="/opt/ros/$ROS_DISTRO" -DCMAKE_PREFIX_PATH="/opt/ros/$ROS_DISTRO" -DCMAKE_BUILD_TYPE=Release ..
     - make -j 4
     - make package
     - if [ -z "$APT_REPO" ]; then export APT_REPO=testing; fi
