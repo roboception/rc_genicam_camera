@@ -58,7 +58,7 @@ stages:
   script:
     - mkdir build && cd build
     - cmake ..
-    - make -j 4
+    - make
     - CTEST_OUTPUT_ON_FAILURE=1 make test
 
 # run test script with latest debs from testing installed
@@ -90,7 +90,7 @@ stages:
   script:
     - mkdir build && cd build
     - cmake -DCATKIN_BUILD_BINARY_PACKAGE="1" -DCMAKE_INSTALL_PREFIX="/opt/ros/$ROS_DISTRO" -DCMAKE_PREFIX_PATH="/opt/ros/$ROS_DISTRO" -DCMAKE_BUILD_TYPE=Release ..
-    - make -j 4
+    - make
     - make package
     - if [ -z "$APT_REPO" ]; then export APT_REPO=testing; fi
     - upload_deb.sh $DISTRO_CODENAME-$APT_REPO *.deb
@@ -268,20 +268,3 @@ package_stable:xenial:armhf:
 package_stable:bionic:amd64:
   <<: *amd64_bionic_job
   extends: .package_stable
-
-###############
-# Docker images
-###############
-image:rc_visard_driver:kinetic:testing:
-  extends: .docker_build
-  variables:
-    PACKAGE: "rc_visard_driver"
-    ROS_DISTRO: "kinetic"
-    DOCKERFILE: "Dockerfile.rc_visard_driver"
-
-image:rc_hand_eye_calibration_client:kinetic:testing:
-  extends: .docker_build
-  variables:
-    PACKAGE: "rc_hand_eye_calibration_client"
-    ROS_DISTRO: "kinetic"
-    DOCKERFILE: "Dockerfile.rc_hand_eye_calibration_client"
