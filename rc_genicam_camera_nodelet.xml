@@ -1,0 +1,11 @@
+<library path="lib/librc_genicam_camera_nodelet">
+  <class name="rc_genicam_camera"
+         type="rcgccam::GenICamCameraNodelet"
+         base_class_type="nodelet::Nodelet">
+    <description> 
+      This nodelet permits access to the configuration of a GenICam compatible
+      camera and publishes raw images and camera_info messages according to the
+      ROS image pipeline.
+    </description>
+  </class>
+</library>
