@@ -34,15 +34,16 @@
 #ifndef RCGCCAM_CAMERAINFOPUBLISHER_H
 #define RCGCCAM_CAMERAINFOPUBLISHER_H
 
-#include "genicam2ros_publisher.h"
-
 #include <ros/ros.h>
 #include <sensor_msgs/CameraInfo.h>
+#include <sensor_msgs/Image.h>
+
+#include <string>
 
 namespace rcgccam
 {
 
-class CameraInfoPublisher : public GenICam2RosPublisher
+class CameraInfoPublisher
 {
 
 public:
@@ -51,18 +52,16 @@ public:
     Initialization of publisher.
 
     @param nh              Node handle.
-    @param frame_id_prefix Prefix for frame ids in published ros messages.
     @param calib_file      Path and name of calibration file. The topic is not
                            advertised and nothing is published if the
                            calibration cannot be loaded from this file.
   */
 
-  CameraInfoPublisher(ros::NodeHandle& nh, const std::string& frame_id_prefix,
-                      const char *calib_file = 0);
+  CameraInfoPublisher(ros::NodeHandle& nh, const char *calib_file = 0);
 
-  bool used() override;
+  bool used();
 
-  void publish(const rcg::Buffer* buffer, uint32_t part, uint64_t pixelformat) override;
+  void publish(const sensor_msgs::ImagePtr &image);
 
 private:
 

@@ -41,9 +41,7 @@
 namespace rcgccam
 {
 
-ImagePublisher::ImagePublisher(image_transport::ImageTransport& it,
-                               const std::string& frame_id_prefix)
-  : GenICam2RosPublisher(frame_id_prefix)
+ImagePublisher::ImagePublisher(image_transport::ImageTransport& it)
 {
   pub = it.advertise("image_raw", 1);
 }
@@ -53,15 +51,26 @@ bool ImagePublisher::used()
   return pub.getNumSubscribers() > 0;
 }
 
-void ImagePublisher::publish(const rcg::Buffer* buffer, uint32_t part, uint64_t pixelformat)
+void ImagePublisher::publish(const sensor_msgs::ImagePtr &image)
 {
-  bool sub = (pub.getNumSubscribers() > 0);
+  if (image && pub.getNumSubscribers() > 0)
+  {
+    pub.publish(image);
+  }
+}
 
-  if (sub && pixelformat == Mono8)
+sensor_msgs::ImagePtr rosImageFromBuffer(const std::string &frame_id, const rcg::Buffer* buffer,
+                                         uint32_t part)
+{
+  sensor_msgs::ImagePtr im;
+
+  uint64_t pixelformat = buffer->getPixelFormat(part);
+
+  if (pixelformat == Mono8)
   {
     // create image and initialize header
 
-    sensor_msgs::ImagePtr im = boost::make_shared<sensor_msgs::Image>();
+    im = boost::make_shared<sensor_msgs::Image>();
 
     const uint64_t freq = 1000000000ul;
     uint64_t time = buffer->getTimestampNS();
@@ -105,9 +114,9 @@ void ImagePublisher::publish(const rcg::Buffer* buffer, uint32_t part, uint64_t 
         }
       }
     }
-
-    pub.publish(im);
   }
+
+  return im;
 }
 
 }

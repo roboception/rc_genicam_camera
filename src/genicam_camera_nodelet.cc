@@ -90,7 +90,7 @@ void GenICamCameraNodelet::onInit()
   std::string calib = "";
 
   std::string ns = ros::this_node::getNamespace();
-  prefix = (ns != "") ? ns + "_" : "";
+  frame_id = ns + "camera";
 
   pnh.param("device", device, device);
   pnh.param("gev_access", access, access);
@@ -269,8 +269,8 @@ void GenICamCameraNodelet::grab(std::string device, rcg::Device::ACCESS access, 
     ros::NodeHandle nh(getNodeHandle(), "");
     image_transport::ImageTransport it(nh);
 
-    CameraInfoPublisher caminfo_pub(nh, prefix, calib.c_str());
-    ImagePublisher image_pub(it, prefix);
+    CameraInfoPublisher caminfo_pub(nh, calib.c_str());
+    ImagePublisher image_pub(it);
 
     // loop until nodelet is killed
 
@@ -325,7 +325,7 @@ void GenICamCameraNodelet::grab(std::string device, rcg::Device::ACCESS access, 
 
         while (running)
         {
-          const rcg::Buffer* buffer = stream[0]->grab(100);
+          const rcg::Buffer* buffer = stream[0]->grab(50);
 
           if (buffer != 0)
           {
@@ -336,10 +336,10 @@ void GenICamCameraNodelet::grab(std::string device, rcg::Device::ACCESS access, 
               {
                 if (buffer->getImagePresent(part))
                 {
-                  uint64_t pixelformat = buffer->getPixelFormat(part);
+                  sensor_msgs::ImagePtr image=rosImageFromBuffer(frame_id, buffer, part);
 
-                  caminfo_pub.publish(buffer, part, pixelformat);
-                  image_pub.publish(buffer, part, pixelformat);
+                  caminfo_pub.publish(image);
+                  image_pub.publish(image);
                 }
               }
             }

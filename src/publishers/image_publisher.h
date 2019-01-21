@@ -34,16 +34,18 @@
 #ifndef RCGCCAM_IMAGEPUBLISHER_H
 #define RCGCCAM_IMAGEPUBLISHER_H
 
-#include "genicam2ros_publisher.h"
-
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
 #include <sensor_msgs/Image.h>
 
+#include <rc_genicam_api/buffer.h>
+
+#include <string>
+
 namespace rcgccam
 {
 
-class ImagePublisher : public GenICam2RosPublisher
+class ImagePublisher
 {
 
 public:
@@ -52,22 +54,29 @@ public:
     Initialization of publisher.
 
     @param it              Image transport handle.
-    @param frame_id_prefix Prefix for frame ids in published ros messages.
   */
 
-  ImagePublisher(image_transport::ImageTransport& it, const std::string& frame_id_prefix);
+  ImagePublisher(image_transport::ImageTransport& id);
 
-  bool used() override;
+  bool used();
 
-  void publish(const rcg::Buffer* buffer, uint32_t part, uint64_t pixelformat) override;
+  void publish(const sensor_msgs::ImagePtr &image);
 
 private:
 
   ImagePublisher(const ImagePublisher&);             // forbidden
   ImagePublisher& operator=(const ImagePublisher&);  // forbidden
 
+  std::string frame_id;
   image_transport::Publisher pub;
 };
+
+/**
+  Converts a (supported) image in a GenICam buffer into a ROS image.
+*/
+
+sensor_msgs::ImagePtr rosImageFromBuffer(const std::string &frame_id, const rcg::Buffer* buffer,
+                                         uint32_t part);
 
 }
 

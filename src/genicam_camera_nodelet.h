@@ -74,7 +74,7 @@ private:
   ros::ServiceServer get_param_service;
   ros::ServiceServer set_param_service;
 
-  std::string      prefix;
+  std::string      frame_id;
 
   std::thread      grab_thread;
   std::atomic_bool running;

@@ -33,8 +33,6 @@
 
 #include "camera_info_publisher.h"
 
-#include <rc_genicam_api/pixel_formats.h>
-
 #include <string>
 #include <map>
 #include <stdexcept>
@@ -203,13 +201,9 @@ bool getMatrix33(const std::map<std::string, std::string> &data,
 
 }
 
-CameraInfoPublisher::CameraInfoPublisher(ros::NodeHandle& nh, const std::string& frame_id_prefix,
-                                         const char *calib_file)
-  : GenICam2RosPublisher(frame_id_prefix)
+CameraInfoPublisher::CameraInfoPublisher(ros::NodeHandle& nh, const char *calib_file)
 {
   // prepare camera info message
-
-  info.header.frame_id = frame_id;
 
   if (calib_file != 0 && calib_file[0] != '\0')
   {
@@ -301,19 +295,13 @@ bool CameraInfoPublisher::used()
   return pub.getNumSubscribers() > 0;
 }
 
-void CameraInfoPublisher::publish(const rcg::Buffer* buffer, uint32_t part, uint64_t pixelformat)
+void CameraInfoPublisher::publish(const sensor_msgs::ImagePtr &image)
 {
-  if (pub.getNumSubscribers() > 0 && pixelformat == Mono8)
+  if (image && pub.getNumSubscribers() > 0)
   {
-    const uint64_t freq = 1000000000ul;
-    uint64_t time = buffer->getTimestampNS();
-
-    info.header.seq = 0;
-    info.header.stamp.sec = time / freq;
-    info.header.stamp.nsec = time - freq * info.header.stamp.sec;
-
-    info.width = static_cast<uint32_t>(buffer->getWidth(part));
-    info.height = static_cast<uint32_t>(buffer->getHeight(part));
+    info.header = image->header;
+    info.width = image->width;
+    info.height = image->height;
 
     pub.publish(info);
   }
