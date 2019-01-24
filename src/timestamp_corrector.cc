@@ -128,7 +128,7 @@ bool TimestampCorrector::determineOffset(const std::shared_ptr<GenApi::CNodeMapR
 
 int64_t TimestampCorrector::correct(ros::Time &time)
 {
-  if (tolerance >= 0)
+  if (tolerance >= 0 && accuracy >= 0)
   {
     int64_t t=static_cast<int64_t>(time.toNSec());
     time.fromNSec(static_cast<uint64_t>(t+offset));
@@ -136,7 +136,7 @@ int64_t TimestampCorrector::correct(ros::Time &time)
     return accuracy;
   }
 
-  return 0;
+  return -1;
 }
 
 }
