@@ -2,7 +2,10 @@
 set(SRC
     genicam_camera_nodelet.cc
     publishers/camera_info_publisher.cc
-    publishers/image_publisher.cc)
+    publishers/image_publisher.cc
+    timestamp_corrector.cc
+    imagelist.cc
+    camerainfolist.cc)
 
 # build and install the nodelet
 

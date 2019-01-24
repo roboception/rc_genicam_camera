@@ -48,6 +48,8 @@ class CameraInfoPublisher
 
 public:
 
+  CameraInfoPublisher();
+
   /**
     Initialization of publisher.
 
@@ -57,7 +59,7 @@ public:
                            calibration cannot be loaded from this file.
   */
 
-  CameraInfoPublisher(ros::NodeHandle& nh, const char *calib_file = 0);
+  void init(ros::NodeHandle& nh, const char *calib_file = 0);
 
   bool used();
 

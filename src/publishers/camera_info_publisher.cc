@@ -201,7 +201,10 @@ bool getMatrix33(const std::map<std::string, std::string> &data,
 
 }
 
-CameraInfoPublisher::CameraInfoPublisher(ros::NodeHandle& nh, const char *calib_file)
+CameraInfoPublisher::CameraInfoPublisher()
+{ }
+
+void CameraInfoPublisher::init(ros::NodeHandle& nh, const char *calib_file)
 {
   // prepare camera info message
 

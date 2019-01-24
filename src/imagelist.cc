@@ -1,4 +1,6 @@
 /*
+ * This file is part of the rc_genicam_camera package.
+ *
  * Copyright (c) 2019 Roboception GmbH
  * All rights reserved
  *
@@ -31,55 +33,78 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RCGCCAM_IMAGEPUBLISHER_H
-#define RCGCCAM_IMAGEPUBLISHER_H
+#include "imagelist.h"
 
-#include <ros/ros.h>
-#include <image_transport/image_transport.h>
-#include <sensor_msgs/Image.h>
-
-#include <rc_genicam_api/buffer.h>
-
-#include <string>
+#include <algorithm>
 
 namespace rcgccam
 {
 
-class ImagePublisher
+ImageList::ImageList()
 {
-
-public:
-
-  ImagePublisher();
-
-  /**
-    Initialization of publisher.
-
-    @param it              Image transport handle.
-  */
-
-  void init(image_transport::ImageTransport& id);
-
-  bool used();
-
-  void publish(const sensor_msgs::ImagePtr &image);
-
-private:
-
-  ImagePublisher(const ImagePublisher&);             // forbidden
-  ImagePublisher& operator=(const ImagePublisher&);  // forbidden
-
-  std::string frame_id;
-  image_transport::Publisher pub;
-};
-
-/**
-  Converts a (supported) image in a GenICam buffer into a ROS image.
-*/
-
-sensor_msgs::ImagePtr rosImageFromBuffer(const std::string &frame_id, const rcg::Buffer* buffer,
-                                         uint32_t part);
-
+  maxsize=25;
 }
 
-#endif
+void ImageList::setSize(size_t _maxsize)
+{
+  maxsize=std::max(static_cast<size_t>(1), _maxsize);
+}
+
+void ImageList::setTolerance(uint64_t _tolerance)
+{
+  tolerance=_tolerance;
+}
+
+sensor_msgs::ImagePtr ImageList::add(const sensor_msgs::ImagePtr &image)
+{
+  list.push_back(image);
+
+  sensor_msgs::ImagePtr ret;
+
+  if (list.size() > maxsize)
+  {
+    ret=list[0];
+    list.erase(list.begin());
+  }
+
+  return ret;
+}
+
+int ImageList::removeOld(const ros::Time &timestamp)
+{
+  size_t i=0;
+  int n=0;
+
+  while (i < list.size())
+  {
+    if (list[i]->header.stamp <= timestamp)
+    {
+      list.erase(list.begin()+static_cast<int>(i));
+      n++;
+    }
+    else
+    {
+      i++;
+    }
+  }
+
+  return n;
+}
+
+sensor_msgs::ImagePtr ImageList::find(const ros::Time &timestamp) const
+{
+  for (size_t i=0; i<list.size(); i++)
+  {
+    uint64_t ts=timestamp.toNSec();
+    uint64_t image_ts=list[i]->header.stamp.toNSec();
+
+    if (image_ts >= ts-tolerance && image_ts <= ts+tolerance)
+    {
+      return list[i];
+    }
+  }
+
+  return sensor_msgs::ImagePtr();
+}
+
+}

@@ -41,7 +41,10 @@
 namespace rcgccam
 {
 
-ImagePublisher::ImagePublisher(image_transport::ImageTransport& it)
+ImagePublisher::ImagePublisher()
+{ }
+
+void ImagePublisher::init(image_transport::ImageTransport& it)
 {
   pub = it.advertise("image_raw", 1);
 }

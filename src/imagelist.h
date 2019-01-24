@@ -1,4 +1,6 @@
 /*
+ * This file is part of the rc_genicam_camera package.
+ *
  * Copyright (c) 2019 Roboception GmbH
  * All rights reserved
  *
@@ -31,54 +33,80 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RCGCCAM_IMAGEPUBLISHER_H
-#define RCGCCAM_IMAGEPUBLISHER_H
+#ifndef RC_GENICAM_CAMERA_IMAGELIST
+#define RC_GENICAM_CAMERA_IMAGELIST
 
 #include <ros/ros.h>
-#include <image_transport/image_transport.h>
 #include <sensor_msgs/Image.h>
-
-#include <rc_genicam_api/buffer.h>
-
-#include <string>
 
 namespace rcgccam
 {
 
-class ImagePublisher
+class ImageList
 {
+  public:
 
-public:
+    /**
+      Create an image list.
+    */
 
-  ImagePublisher();
+    ImageList();
 
-  /**
-    Initialization of publisher.
+    /**
+      Set maximum size of the list.
 
-    @param it              Image transport handle.
-  */
+      @param maxsize Maximum number of elements that the list can hold. The
+                     default is 25.
+    */
 
-  void init(image_transport::ImageTransport& id);
+    void setSize(size_t maxsize);
 
-  bool used();
+    /**
+      Set tolerance for finding corresponding timestamps.
 
-  void publish(const sensor_msgs::ImagePtr &image);
+      @param tolerance Tolerance in nano seconds. Default is 0.
+    */
 
-private:
+    void setTolerance(uint64_t tolerance);
 
-  ImagePublisher(const ImagePublisher&);             // forbidden
-  ImagePublisher& operator=(const ImagePublisher&);  // forbidden
+    /**
+      Adds the given image to the internal list. If the maximum number of
+      elements is exceeded, then the oldest image will be dropped.
 
-  std::string frame_id;
-  image_transport::Publisher pub;
+      @param image Image to be added.
+      @return      Dropped image, null pointer if no image is dropped.
+    */
+
+    sensor_msgs::ImagePtr add(const sensor_msgs::ImagePtr &image);
+
+    /**
+      Remove all images that have a timestamp that is older or equal than the
+      given timestamp.
+
+      @param timestamp Timestamp.
+      @return          Number of removed images.
+    */
+
+    int removeOld(const ros::Time &timestamp);
+
+    /**
+      Returns the oldest image that has a timestamp within the tolerance of the
+      given timestamp. If the image cannot be found, then a nullptr is
+      returned.
+
+      @param timestamp Timestamp.
+      @param tolerance Maximum tolarance added or subtracted to the timestamp.
+      @return Pointer to image or 0.
+    */
+
+    sensor_msgs::ImagePtr find(const ros::Time &timestamp) const;
+
+  private:
+
+    size_t maxsize;
+    uint64_t tolerance;
+    std::vector<sensor_msgs::ImagePtr> list;
 };
-
-/**
-  Converts a (supported) image in a GenICam buffer into a ROS image.
-*/
-
-sensor_msgs::ImagePtr rosImageFromBuffer(const std::string &frame_id, const rcg::Buffer* buffer,
-                                         uint32_t part);
 
 }
 

@@ -34,7 +34,14 @@
 #ifndef RC_GENICAM_CAMERA_NODELET_H
 #define RC_GENICAM_CAMERA_NODELET_H
 
+#include "imagelist.h"
+#include "camerainfolist.h"
+#include "publishers/camera_info_publisher.h"
+#include "publishers/image_publisher.h"
+
 #include <nodelet/nodelet.h>
+#include <message_filters/subscriber.h>
+#include <sensor_msgs/CameraInfo.h>
 
 #include <GenApi/GenApi.h>
 #include <rc_genicam_api/device.h>
@@ -67,21 +74,35 @@ public:
   bool setGenICamParameter(rc_genicam_camera::SetGenICamParameter::Request& req,
                            rc_genicam_camera::SetGenICamParameter::Response& resp);
 
+  void syncInfo(sensor_msgs::CameraInfoPtr info);
+
 private:
 
-  void grab(std::string device, rcg::Device::ACCESS access, std::string config, std::string calib);
+  void grab(std::string device, rcg::Device::ACCESS access, std::string config);
+
+  double timestamp_tolerance;
+  double sync_tolerance;
+
+  ros::Subscriber sub_sync_info;
 
   ros::ServiceServer get_param_service;
   ros::ServiceServer set_param_service;
 
   std::string      frame_id;
 
-  std::thread      grab_thread;
-  std::atomic_bool running;
-
   std::shared_ptr<rcg::Device> rcgdev;
   std::shared_ptr<GenApi::CNodeMapRef> rcgnodemap;
-  std::mutex mtx;
+  std::mutex device_mtx;
+
+  ImageList image_list;
+  CameraInfoList info_list;
+  std::mutex sync_mtx;
+
+  CameraInfoPublisher caminfo_pub;
+  ImagePublisher image_pub;
+
+  std::thread      grab_thread;
+  std::atomic_bool running;
 };
 
 }
