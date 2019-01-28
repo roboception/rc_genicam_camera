@@ -7,13 +7,11 @@ before_script:
   - rosdep install --from-paths . --ignore-src -r -y --skip-keys="rc_genicam_api"
 
 variables:
-  GET_SOURCES_ATTEMPTS: 3
-  GIT_SUBMODULE_STRATEGY: recursive
+  GET_SOURCES_ATTEMPTS: "3"
 
 stages:
   - test
   - package
-  - image
 
 ##################
 # Anchor templates
