@@ -37,44 +37,43 @@
 
 namespace rcgccam
 {
-
 TimestampCorrector::TimestampCorrector()
 {
-  tolerance=2*10000000ll;
-  interval=1000000000ll;
+  tolerance = 2 * 10000000ll;
+  interval = 1000000000ll;
 
-  last=0;
+  last = 0;
 
-  accuracy=-1;
-  offset=0;
+  accuracy = -1;
+  offset = 0;
 }
 
 TimestampCorrector::~TimestampCorrector()
-{ }
+{
+}
 
 void TimestampCorrector::setMaximumTolerance(int64_t tol_ns)
 {
-  tolerance=2*tol_ns;
+  tolerance = 2 * tol_ns;
 }
 
 void TimestampCorrector::setInterval(int64_t interval_ns)
 {
-  interval=interval_ns;
+  interval = interval_ns;
 }
 
 namespace
 {
-
 inline int64_t getClock(clockid_t id)
 {
   struct timespec ts;
   clock_gettime(id, &ts);
-  return ts.tv_sec*1000000000ll+ts.tv_nsec;
+  return ts.tv_sec * 1000000000ll + ts.tv_nsec;
 }
 
-}
+}  // namespace
 
-bool TimestampCorrector::determineOffset(const std::shared_ptr<GenApi::CNodeMapRef> &nodemap)
+bool TimestampCorrector::determineOffset(const std::shared_ptr<GenApi::CNodeMapRef>& nodemap)
 {
   // do nothing if tolerance is negative
 
@@ -85,53 +84,53 @@ bool TimestampCorrector::determineOffset(const std::shared_ptr<GenApi::CNodeMapR
 
   // do nothing if last successful call is not long ago
 
-  int64_t now_ns=getClock(CLOCK_MONOTONIC);
+  int64_t now_ns = getClock(CLOCK_MONOTONIC);
 
-  if (accuracy > 0 && now_ns-last <= interval)
+  if (accuracy > 0 && now_ns - last <= interval)
   {
     return true;
   }
 
   // determine offset of host and camera clock
 
-  last=now_ns;
+  last = now_ns;
 
-  int64_t before_ns=0;
-  int64_t after_ns=0;
+  int64_t before_ns = 0;
+  int64_t after_ns = 0;
 
-  accuracy=tolerance+1;
+  accuracy = tolerance + 1;
 
-  int n=3;
+  int n = 3;
   while (n > 0 && accuracy > tolerance)
   {
-    before_ns=getClock(CLOCK_REALTIME);
+    before_ns = getClock(CLOCK_REALTIME);
     rcg::callCommand(nodemap, "TimestampLatch", true);
-    after_ns=getClock(CLOCK_REALTIME);
+    after_ns = getClock(CLOCK_REALTIME);
 
-    accuracy=after_ns-before_ns;
+    accuracy = after_ns - before_ns;
 
     n--;
   }
 
   if (accuracy <= tolerance)
   {
-    offset=before_ns+(accuracy>>1)-rcg::getInteger(nodemap, "Timestamp");
+    offset = before_ns + (accuracy >> 1) - rcg::getInteger(nodemap, "Timestamp");
 
     return true;
   }
 
-  accuracy=-1;
-  offset=0;
+  accuracy = -1;
+  offset = 0;
 
   return false;
 }
 
-int64_t TimestampCorrector::correct(ros::Time &time)
+int64_t TimestampCorrector::correct(ros::Time& time)
 {
   if (tolerance >= 0 && accuracy >= 0)
   {
-    int64_t t=static_cast<int64_t>(time.toNSec());
-    time.fromNSec(static_cast<uint64_t>(t+offset));
+    int64_t t = static_cast<int64_t>(time.toNSec());
+    time.fromNSec(static_cast<uint64_t>(t + offset));
 
     return accuracy;
   }
@@ -139,4 +138,4 @@ int64_t TimestampCorrector::correct(ros::Time &time)
   return -1;
 }
 
-}
+}  // namespace rcgccam

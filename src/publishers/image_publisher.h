@@ -44,12 +44,9 @@
 
 namespace rcgccam
 {
-
 class ImagePublisher
 {
-
 public:
-
   ImagePublisher();
 
   /**
@@ -57,15 +54,13 @@ public:
 
     @param it              Image transport handle.
   */
-
   void init(image_transport::ImageTransport& id);
 
   bool used();
 
-  void publish(const sensor_msgs::ImagePtr &image);
+  void publish(const sensor_msgs::ImagePtr& image);
 
 private:
-
   ImagePublisher(const ImagePublisher&);             // forbidden
   ImagePublisher& operator=(const ImagePublisher&);  // forbidden
 
@@ -77,16 +72,13 @@ private:
   Translates pixel format from GenICam to ROS. An empty string is returned, if
   lthe format is not supported.
 */
-
-std::string rosPixelformat(int &bytes_per_pixel, uint64_t pixelformat);
+std::string rosPixelformat(int& bytes_per_pixel, uint64_t pixelformat);
 
 /**
   Converts a (supported) image in a GenICam buffer into a ROS image.
 */
+sensor_msgs::ImagePtr rosImageFromBuffer(const std::string& frame_id, const rcg::Buffer* buffer, uint32_t part);
 
-sensor_msgs::ImagePtr rosImageFromBuffer(const std::string &frame_id, const rcg::Buffer* buffer,
-                                         uint32_t part);
-
-}
+}  // namespace rcgccam
 
 #endif

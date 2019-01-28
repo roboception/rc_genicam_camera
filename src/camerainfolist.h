@@ -41,74 +41,65 @@
 
 namespace rcgccam
 {
-
 class CameraInfoList
 {
-  public:
+public:
+  /**
+    Create a camera info list.
+  */
+  CameraInfoList();
 
-    /**
-      Create a camera info list.
-    */
+  /**
+    Set maximum size of the list.
 
-    CameraInfoList();
+    @param maxsize Maximum number of elements that the list can hold. The
+                   default is 25.
+  */
+  void setSize(size_t maxsize);
 
-    /**
-      Set maximum size of the list.
+  /**
+    Set tolerance for finding corresponding timestamps.
 
-      @param maxsize Maximum number of elements that the list can hold. The
-                     default is 25.
-    */
+    @param tolerance Tolerance in nano seconds. Default is 0.
+  */
+  void setTolerance(uint64_t tolerance);
 
-    void setSize(size_t maxsize);
+  /**
+    Adds the given camera info to the internal list. If the maximum number of
+    elements is exceeded, then the oldest camera info will be dropped.
 
-    /**
-      Set tolerance for finding corresponding timestamps.
+    @param info Camera info message to be added.
+    @return     Dropped camera info message, null pointer if nothing is
+                dropped.
+  */
+  sensor_msgs::CameraInfoPtr add(const sensor_msgs::CameraInfoPtr& info);
 
-      @param tolerance Tolerance in nano seconds. Default is 0.
-    */
+  /**
+    Remove all camera infos that have a timestamp that is older or equal than
+    the given timestamp.
 
-    void setTolerance(uint64_t tolerance);
+    @param timestamp Timestamp.
+    @return          Number of removed camera infos.
+  */
+  int removeOld(const ros::Time& timestamp);
 
-    /**
-      Adds the given camera info to the internal list. If the maximum number of
-      elements is exceeded, then the oldest camera info will be dropped.
+  /**
+    Returns the oldest camera info that has a timestamp within the tolerance
+    of the given timestamp. If the camera info cannot be found, then a
+    nullptr is returned.
 
-      @param info Camera info message to be added.
-      @return     Dropped camera info message, null pointer if nothing is
-                  dropped.
-    */
+    @param timestamp Timestamp.
+    @param tolerance Maximum tolarance added or subtracted to the timestamp.
+    @return          Pointer to camera info or 0.
+  */
+  sensor_msgs::CameraInfoPtr find(const ros::Time& timestamp) const;
 
-    sensor_msgs::CameraInfoPtr add(const sensor_msgs::CameraInfoPtr &info);
-
-    /**
-      Remove all camera infos that have a timestamp that is older or equal than
-      the given timestamp.
-
-      @param timestamp Timestamp.
-      @return          Number of removed camera infos.
-    */
-
-    int removeOld(const ros::Time &timestamp);
-
-    /**
-      Returns the oldest camera info that has a timestamp within the tolerance
-      of the given timestamp. If the camera info cannot be found, then a
-      nullptr is returned.
-
-      @param timestamp Timestamp.
-      @param tolerance Maximum tolarance added or subtracted to the timestamp.
-      @return          Pointer to camera info or 0.
-    */
-
-    sensor_msgs::CameraInfoPtr find(const ros::Time &timestamp) const;
-
-  private:
-
-    size_t maxsize;
-    uint64_t tolerance;
-    std::vector<sensor_msgs::CameraInfoPtr> list;
+private:
+  size_t maxsize;
+  uint64_t tolerance;
+  std::vector<sensor_msgs::CameraInfoPtr> list;
 };
 
-}
+}  // namespace rcgccam
 
 #endif

@@ -52,7 +52,6 @@
 
 namespace rcgccam
 {
-
 #define ROS_HAS_STEADYTIME (ROS_VERSION_MINIMUM(1, 13, 1) || ((ROS_VERSION_MINOR == 12) && ROS_VERSION_PATCH >= 8))
 
 GenICamCameraNodelet::GenICamCameraNodelet()
@@ -122,7 +121,7 @@ void GenICamCameraNodelet::onInit()
 
   // optional parameters for timestamp correction
 
-  bool host_timestamp=false;
+  bool host_timestamp = false;
   timestamp_tolerance = 0.01;
 
   pnh.param("host_timestamp", host_timestamp, host_timestamp);
@@ -143,13 +142,13 @@ void GenICamCameraNodelet::onInit()
 
   if (sync_info.size() > 0)
   {
-    sub_sync_info=nh.subscribe(sync_info, 10, &GenICamCameraNodelet::syncInfo, this);
+    sub_sync_info = nh.subscribe(sync_info, 10, &GenICamCameraNodelet::syncInfo, this);
 
     image_list.setSize(25);
-    image_list.setTolerance(static_cast<uint64_t>(sync_tolerance*1000000000.0));
+    image_list.setTolerance(static_cast<uint64_t>(sync_tolerance * 1000000000.0));
 
     info_list.setSize(25);
-    info_list.setTolerance(static_cast<uint64_t>(sync_tolerance*1000000000.0));
+    info_list.setTolerance(static_cast<uint64_t>(sync_tolerance * 1000000000.0));
   }
   else
   {
@@ -158,11 +157,9 @@ void GenICamCameraNodelet::onInit()
 
   // setup service for getting and setting parameters
 
-  get_param_service = pnh.advertiseService("get_genicam_parameter",
-                                           &GenICamCameraNodelet::getGenICamParameter, this);
+  get_param_service = pnh.advertiseService("get_genicam_parameter", &GenICamCameraNodelet::getGenICamParameter, this);
 
-  set_param_service = pnh.advertiseService("set_genicam_parameter",
-                                           &GenICamCameraNodelet::setGenICamParameter, this);
+  set_param_service = pnh.advertiseService("set_genicam_parameter", &GenICamCameraNodelet::setGenICamParameter, this);
 
   // initialize publishers
 
@@ -179,10 +176,9 @@ void GenICamCameraNodelet::onInit()
 
 namespace
 {
-
 // read file as string
 
-std::string loadConfig(const std::string &filename)
+std::string loadConfig(const std::string& filename)
 {
   if (filename.size() > 0)
   {
@@ -203,49 +199,52 @@ std::string loadConfig(const std::string &filename)
 // An expection is thrown in case of an error. Execution stops on the first
 // error.
 
-void applyParameters(const std::shared_ptr<GenApi::CNodeMapRef>& nodemap, const std::string &parameters)
+void applyParameters(const std::shared_ptr<GenApi::CNodeMapRef>& nodemap, const std::string& parameters)
 {
-  size_t i=0;
+  size_t i = 0;
 
   while (i < parameters.size())
   {
     // eat all white spaces
 
-    while (i < parameters.size() && std::isspace(parameters[i])) i++;
+    while (i < parameters.size() && std::isspace(parameters[i]))
+      i++;
 
     // skip comments which start with # and end by \n
 
     if (i < parameters.size() && parameters[i] == '#')
     {
-      while (i < parameters.size() && parameters[i] != '\n') i++;
+      while (i < parameters.size() && parameters[i] != '\n')
+        i++;
     }
     else
     {
-      size_t k=i;
-      while (k < parameters.size() && !std::isspace(parameters[k])) k++;
+      size_t k = i;
+      while (k < parameters.size() && !std::isspace(parameters[k]))
+        k++;
 
-      size_t j=parameters.find('=', i);
+      size_t j = parameters.find('=', i);
 
       if (j <= k)
       {
-        std::string name=parameters.substr(i, j-i);
-        std::string value=parameters.substr(j+1, k-j-1);
+        std::string name = parameters.substr(i, j - i);
+        std::string value = parameters.substr(j + 1, k - j - 1);
 
         rcg::setString(nodemap, name.c_str(), value.c_str(), true);
       }
       else if (i < k)
       {
-        std::string name=parameters.substr(i, k-i);
+        std::string name = parameters.substr(i, k - i);
 
         rcg::callCommand(nodemap, name.c_str(), true);
       }
 
-      i=k;
+      i = k;
     }
   }
 }
 
-}
+}  // namespace
 
 bool GenICamCameraNodelet::getGenICamParameter(rc_genicam_camera::GetGenICamParameter::Request& req,
                                                rc_genicam_camera::GetGenICamParameter::Response& resp)
@@ -256,16 +255,16 @@ bool GenICamCameraNodelet::getGenICamParameter(rc_genicam_camera::GetGenICamPara
   {
     try
     {
-      resp.value=rcg::getString(rcgnodemap, req.name.c_str(), true);
-      resp.return_code.value=resp.return_code.SUCCESS;
-      resp.return_code.message="ok";
+      resp.value = rcg::getString(rcgnodemap, req.name.c_str(), true);
+      resp.return_code.value = resp.return_code.SUCCESS;
+      resp.return_code.message = "ok";
     }
-    catch (const std::exception &ex)
+    catch (const std::exception& ex)
     {
       ROS_ERROR_STREAM("rc_genicam_camera: Cannot get parameter: " << ex.what());
 
-      resp.return_code.value=resp.return_code.INVALID_ARGUMENT;
-      resp.return_code.message=ex.what();
+      resp.return_code.value = resp.return_code.INVALID_ARGUMENT;
+      resp.return_code.message = ex.what();
     }
   }
 
@@ -283,15 +282,15 @@ bool GenICamCameraNodelet::setGenICamParameter(rc_genicam_camera::SetGenICamPara
     {
       applyParameters(rcgnodemap, req.parameters);
 
-      resp.return_code.value=resp.return_code.SUCCESS;
-      resp.return_code.message="ok";
+      resp.return_code.value = resp.return_code.SUCCESS;
+      resp.return_code.message = "ok";
     }
-    catch (const std::exception &ex)
+    catch (const std::exception& ex)
     {
       ROS_ERROR_STREAM("rc_genicam_camera: Cannot set parameters: " << ex.what());
 
-      resp.return_code.value=resp.return_code.INVALID_ARGUMENT;
-      resp.return_code.message=ex.what();
+      resp.return_code.value = resp.return_code.INVALID_ARGUMENT;
+      resp.return_code.message = ex.what();
     }
   }
 
@@ -307,13 +306,13 @@ void GenICamCameraNodelet::syncInfo(sensor_msgs::CameraInfoPtr info)
 
     // find image that corresponds to camera info
 
-    image=image_list.find(info->header.stamp);
+    image = image_list.find(info->header.stamp);
 
     if (image != 0)
     {
       // remove all older images and infos
 
-      int n=image_list.removeOld(image->header.stamp)-1;
+      int n = image_list.removeOld(image->header.stamp) - 1;
       info_list.removeOld(info->header.stamp);
 
       if (n > 0)
@@ -323,7 +322,7 @@ void GenICamCameraNodelet::syncInfo(sensor_msgs::CameraInfoPtr info)
 
       // correct time stamp of image
 
-      image->header.stamp=info->header.stamp;
+      image->header.stamp = info->header.stamp;
     }
     else
     {
@@ -355,7 +354,7 @@ void GenICamCameraNodelet::grab(std::string device, rcg::Device::ACCESS access, 
     // initialize optional timestamp correction
 
     TimestampCorrector ts_host;
-    ts_host.setMaximumTolerance(static_cast<int64_t>(timestamp_tolerance*1000000000));
+    ts_host.setMaximumTolerance(static_cast<int64_t>(timestamp_tolerance * 1000000000));
     ts_host.setInterval(1000000000ll);
 
     // loop until nodelet is killed
@@ -387,7 +386,7 @@ void GenICamCameraNodelet::grab(std::string device, rcg::Device::ACCESS access, 
           {
             applyParameters(rcgnodemap, init_params);
           }
-          catch (const std::exception &ex)
+          catch (const std::exception& ex)
           {
             ROS_ERROR_STREAM("rc_genicam_camera: Error during initial camera configuration: " << ex.what());
           }
@@ -397,8 +396,9 @@ void GenICamCameraNodelet::grab(std::string device, rcg::Device::ACCESS access, 
 
         if (!ts_host.determineOffset(rcgnodemap))
         {
-          ROS_ERROR_STREAM("rc_genicam_camera: Cannot determine offset between host and camera clock with maximum tolerance of "
-                           << timestamp_tolerance << " s");
+          ROS_ERROR_STREAM(
+              "rc_genicam_camera: Cannot determine offset between host and camera clock with maximum tolerance of "
+              << timestamp_tolerance << " s");
         }
 
         // start streaming
@@ -425,14 +425,14 @@ void GenICamCameraNodelet::grab(std::string device, rcg::Device::ACCESS access, 
           {
             if (!buffer->getIsIncomplete())
             {
-              uint32_t npart=buffer->getNumberOfParts();
-              for (uint32_t part=0; part<npart; part++)
+              uint32_t npart = buffer->getNumberOfParts();
+              for (uint32_t part = 0; part < npart; part++)
               {
                 if (buffer->getImagePresent(part))
                 {
                   // convert image to ROS
 
-                  sensor_msgs::ImagePtr image=rosImageFromBuffer(frame_id, buffer, part);
+                  sensor_msgs::ImagePtr image = rosImageFromBuffer(frame_id, buffer, part);
 
                   if (image)
                   {
@@ -449,13 +449,13 @@ void GenICamCameraNodelet::grab(std::string device, rcg::Device::ACCESS access, 
 
                       // find camera info that corresponds to the image
 
-                      sensor_msgs::CameraInfoPtr info=info_list.find(image->header.stamp);
+                      sensor_msgs::CameraInfoPtr info = info_list.find(image->header.stamp);
 
                       if (info != 0)
                       {
                         // remove all older images and infos
 
-                        int n=image_list.removeOld(image->header.stamp);
+                        int n = image_list.removeOld(image->header.stamp);
                         info_list.removeOld(info->header.stamp);
 
                         if (n > 0)
@@ -465,14 +465,14 @@ void GenICamCameraNodelet::grab(std::string device, rcg::Device::ACCESS access, 
 
                         // correct time stamp of image
 
-                        image->header.stamp=info->header.stamp;
+                        image->header.stamp = info->header.stamp;
                       }
                       else
                       {
                         // store image in internal list for later
                         // synchronization to camera info
 
-                        image=image_list.add(image);
+                        image = image_list.add(image);
 
                         if (image)
                         {
@@ -502,7 +502,8 @@ void GenICamCameraNodelet::grab(std::string device, rcg::Device::ACCESS access, 
 
               if (!ts_host.determineOffset(rcgnodemap))
               {
-                ROS_ERROR_STREAM("rc_genicam_camera: Cannot determine offset between host and camera clock with maximum tolerance of "
+                ROS_ERROR_STREAM("rc_genicam_camera: Cannot determine offset between host and camera clock with "
+                                 "maximum tolerance of "
                                  << timestamp_tolerance << " s");
               }
             }
@@ -529,7 +530,8 @@ void GenICamCameraNodelet::grab(std::string device, rcg::Device::ACCESS access, 
       {
         std::lock_guard<std::mutex> lock(device_mtx);
 
-        if (rcgdev) rcgdev->close();
+        if (rcgdev)
+          rcgdev->close();
 
         rcgdev.reset();
         rcgnodemap.reset();
@@ -545,10 +547,10 @@ void GenICamCameraNodelet::grab(std::string device, rcg::Device::ACCESS access, 
     ROS_FATAL_STREAM("rc_genicam_camera: Unknown exception");
   }
 
-  running=false;
+  running = false;
   ROS_INFO("rc_genicam_camera: Grabbing thread stopped");
 }
 
-}
+}  // namespace rcgccam
 
 PLUGINLIB_EXPORT_CLASS(rcgccam::GenICamCameraNodelet, nodelet::Nodelet)

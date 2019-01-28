@@ -42,12 +42,9 @@
 
 namespace rcgccam
 {
-
 class CameraInfoPublisher
 {
-
 public:
-
   CameraInfoPublisher();
 
   /**
@@ -58,15 +55,13 @@ public:
                            advertised and nothing is published if the
                            calibration cannot be loaded from this file.
   */
-
-  void init(ros::NodeHandle& nh, const char *calib_file = 0);
+  void init(ros::NodeHandle& nh, const char* calib_file = 0);
 
   bool used();
 
-  void publish(const sensor_msgs::ImagePtr &image);
+  void publish(const sensor_msgs::ImagePtr& image);
 
 private:
-
   CameraInfoPublisher(const CameraInfoPublisher&);             // forbidden
   CameraInfoPublisher& operator=(const CameraInfoPublisher&);  // forbidden
 
@@ -74,6 +69,6 @@ private:
   ros::Publisher pub;
 };
 
-}
+}  // namespace rcgccam
 
 #endif

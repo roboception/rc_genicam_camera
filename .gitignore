@@ -4,5 +4,6 @@ build
 *.swp
 
 .*
+!.clang-format
 !.gitignore
 !.gitlab-ci.yml

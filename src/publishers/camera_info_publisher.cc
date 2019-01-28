@@ -42,15 +42,13 @@
 
 namespace rcgccam
 {
-
 namespace
 {
-
-void trim(std::string &s)
+void trim(std::string& s)
 {
   size_t pos;
 
-  pos=0;
+  pos = 0;
 
   while (pos < s.size() && isspace(s[pos]))
   {
@@ -59,29 +57,28 @@ void trim(std::string &s)
 
   if (pos > 0)
   {
-    s=s.substr(pos);
+    s = s.substr(pos);
   }
 
-  pos=s.size();
+  pos = s.size();
 
-  while (pos > 0 && isspace(s[pos-1]))
+  while (pos > 0 && isspace(s[pos - 1]))
   {
     pos--;
   }
 
   if (pos < s.size())
   {
-    s=s.substr(0, pos);
+    s = s.substr(0, pos);
   }
 }
 
-
 // load key/value pairs from an ascii file into a map
 
-bool loadFile(std::map<std::string, std::string> &data, const char *name)
+bool loadFile(std::map<std::string, std::string>& data, const char* name)
 {
   std::ifstream in;
-  std::string   line;
+  std::string line;
 
   in.open(name);
 
@@ -96,26 +93,26 @@ bool loadFile(std::map<std::string, std::string> &data, const char *name)
 
     trim(line);
 
-    size_t pos=line.find('#');
+    size_t pos = line.find('#');
 
     if (pos != line.npos)
     {
-      line=line.substr(0, pos);
+      line = line.substr(0, pos);
     }
 
     if (line.size() > 0)
     {
-      pos=line.find('=');
+      pos = line.find('=');
 
       if (pos != line.npos)
       {
-        std::string key=line.substr(0, pos);
-        std::string value=line.substr(pos+1);
+        std::string key = line.substr(0, pos);
+        std::string value = line.substr(pos + 1);
 
         trim(key);
         trim(value);
 
-        data.insert(std::pair<std::string,std::string>(key, value));
+        data.insert(std::pair<std::string, std::string>(key, value));
       }
       else
       {
@@ -129,38 +126,37 @@ bool loadFile(std::map<std::string, std::string> &data, const char *name)
   return true;
 }
 
-template <class T> void getValue(const std::map<std::string, std::string> &data,
-  const char *key, T &value, const char *defvalue)
+template <class T>
+void getValue(const std::map<std::string, std::string>& data, const char* key, T& value, const char* defvalue)
 {
-  std::map<std::string, std::string>::const_iterator it=data.find(key);
+  std::map<std::string, std::string>::const_iterator it = data.find(key);
   std::string v;
 
   if (it != data.end())
   {
-    v=it->second;
+    v = it->second;
   }
   else
   {
-    v=defvalue;
+    v = defvalue;
   }
 
   std::istringstream in(v);
   in >> value;
 }
 
-bool getMatrix33(const std::map<std::string, std::string> &data,
-  const char *key, boost::array<double, 9> &values)
+bool getMatrix33(const std::map<std::string, std::string>& data, const char* key, boost::array<double, 9>& values)
 {
-  std::map<std::string, std::string>::const_iterator it=data.find(key);
+  std::map<std::string, std::string>::const_iterator it = data.find(key);
   std::string v;
 
   if (it != data.end())
   {
-    v=it->second;
+    v = it->second;
   }
   else
   {
-    v="[1 0 0; 0 1 0; 0 0 1]";
+    v = "[1 0 0; 0 1 0; 0 0 1]";
   }
 
   std::istringstream in(v);
@@ -170,17 +166,17 @@ bool getMatrix33(const std::map<std::string, std::string> &data,
 
   if (c == '[')
   {
-    int j=0;
-    for (int k=0; k<3 && in; k++)
+    int j = 0;
+    for (int k = 0; k < 3 && in; k++)
     {
-      for (int i=0; i<3 && in; i++)
+      for (int i = 0; i < 3 && in; i++)
       {
         in >> values[j++];
       }
 
       in >> c;
 
-      if (k+1 < 3 && c != ';')
+      if (k + 1 < 3 && c != ';')
       {
         return false;
       }
@@ -199,12 +195,13 @@ bool getMatrix33(const std::map<std::string, std::string> &data,
   return true;
 }
 
-}
+}  // namespace
 
 CameraInfoPublisher::CameraInfoPublisher()
-{ }
+{
+}
 
-void CameraInfoPublisher::init(ros::NodeHandle& nh, const char *calib_file)
+void CameraInfoPublisher::init(ros::NodeHandle& nh, const char* calib_file)
 {
   // prepare camera info message
 
@@ -232,13 +229,13 @@ void CameraInfoPublisher::init(ros::NodeHandle& nh, const char *calib_file)
 
       if (e1 != 0 || e2 != 0 || e3 != 0 || e4 != 0)
       {
-        info.distortion_model="equidistant";
+        info.distortion_model = "equidistant";
         info.D.resize(4);
 
-        info.D[0]=e1;
-        info.D[1]=e2;
-        info.D[2]=e3;
-        info.D[3]=e4;
+        info.D[0] = e1;
+        info.D[1] = e2;
+        info.D[2] = e3;
+        info.D[3] = e4;
       }
       else
       {
@@ -250,14 +247,14 @@ void CameraInfoPublisher::init(ros::NodeHandle& nh, const char *calib_file)
         getValue(data, "camera.p1", p1, "0");
         getValue(data, "camera.p2", p2, "0");
 
-        info.distortion_model="plumb_bob";
+        info.distortion_model = "plumb_bob";
         info.D.resize(5);
 
-        info.D[0]=k1;
-        info.D[1]=k2;
-        info.D[2]=k3;
-        info.D[3]=p1;
-        info.D[4]=p2;
+        info.D[0] = k1;
+        info.D[1] = k2;
+        info.D[2] = k3;
+        info.D[3] = p1;
+        info.D[4] = p2;
       }
 
       info.R[0] = 1;
@@ -298,7 +295,7 @@ bool CameraInfoPublisher::used()
   return pub.getNumSubscribers() > 0;
 }
 
-void CameraInfoPublisher::publish(const sensor_msgs::ImagePtr &image)
+void CameraInfoPublisher::publish(const sensor_msgs::ImagePtr& image)
 {
   if (image && pub.getNumSubscribers() > 0)
   {
@@ -310,4 +307,4 @@ void CameraInfoPublisher::publish(const sensor_msgs::ImagePtr &image)
   }
 }
 
-}
+}  // namespace rcgccam

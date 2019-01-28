@@ -40,9 +40,9 @@
 
 namespace rcgccam
 {
-
 ImagePublisher::ImagePublisher()
-{ }
+{
+}
 
 void ImagePublisher::init(image_transport::ImageTransport& it)
 {
@@ -54,7 +54,7 @@ bool ImagePublisher::used()
   return pub.getNumSubscribers() > 0;
 }
 
-void ImagePublisher::publish(const sensor_msgs::ImagePtr &image)
+void ImagePublisher::publish(const sensor_msgs::ImagePtr& image)
 {
   if (image && pub.getNumSubscribers() > 0)
   {
@@ -62,108 +62,107 @@ void ImagePublisher::publish(const sensor_msgs::ImagePtr &image)
   }
 }
 
-std::string rosPixelformat(int &bytes_per_pixel, uint64_t pixelformat)
+std::string rosPixelformat(int& bytes_per_pixel, uint64_t pixelformat)
 {
   std::string ret;
 
   switch (pixelformat)
   {
     case Mono8:
-      ret=sensor_msgs::image_encodings::MONO8;
-      bytes_per_pixel=1;
+      ret = sensor_msgs::image_encodings::MONO8;
+      bytes_per_pixel = 1;
       break;
 
     case Mono16:
-      ret=sensor_msgs::image_encodings::MONO16;
-      bytes_per_pixel=2;
+      ret = sensor_msgs::image_encodings::MONO16;
+      bytes_per_pixel = 2;
       break;
 
     case BayerBG8:
-      ret=sensor_msgs::image_encodings::BAYER_BGGR8;
-      bytes_per_pixel=1;
+      ret = sensor_msgs::image_encodings::BAYER_BGGR8;
+      bytes_per_pixel = 1;
       break;
 
     case BayerBG16:
-      ret=sensor_msgs::image_encodings::BAYER_BGGR16;
-      bytes_per_pixel=2;
+      ret = sensor_msgs::image_encodings::BAYER_BGGR16;
+      bytes_per_pixel = 2;
       break;
 
     case BayerGB8:
-      ret=sensor_msgs::image_encodings::BAYER_GBRG8;
-      bytes_per_pixel=1;
+      ret = sensor_msgs::image_encodings::BAYER_GBRG8;
+      bytes_per_pixel = 1;
       break;
 
     case BayerGB16:
-      ret=sensor_msgs::image_encodings::BAYER_GBRG16;
-      bytes_per_pixel=2;
+      ret = sensor_msgs::image_encodings::BAYER_GBRG16;
+      bytes_per_pixel = 2;
       break;
 
     case BayerGR8:
-      ret=sensor_msgs::image_encodings::BAYER_GRBG8;
-      bytes_per_pixel=1;
+      ret = sensor_msgs::image_encodings::BAYER_GRBG8;
+      bytes_per_pixel = 1;
       break;
 
     case BayerGR16:
-      ret=sensor_msgs::image_encodings::BAYER_GRBG16;
-      bytes_per_pixel=2;
+      ret = sensor_msgs::image_encodings::BAYER_GRBG16;
+      bytes_per_pixel = 2;
       break;
 
     case BayerRG8:
-      ret=sensor_msgs::image_encodings::BAYER_RGGB8;
-      bytes_per_pixel=1;
+      ret = sensor_msgs::image_encodings::BAYER_RGGB8;
+      bytes_per_pixel = 1;
       break;
 
     case BayerRG16:
-      ret=sensor_msgs::image_encodings::BAYER_RGGB16;
-      bytes_per_pixel=2;
+      ret = sensor_msgs::image_encodings::BAYER_RGGB16;
+      bytes_per_pixel = 2;
       break;
 
     case RGB8:
-      ret=sensor_msgs::image_encodings::RGB8;
-      bytes_per_pixel=3;
+      ret = sensor_msgs::image_encodings::RGB8;
+      bytes_per_pixel = 3;
       break;
 
     case RGB16:
-      ret=sensor_msgs::image_encodings::RGB16;
-      bytes_per_pixel=6;
+      ret = sensor_msgs::image_encodings::RGB16;
+      bytes_per_pixel = 6;
       break;
 
     case RGBa8:
-      ret=sensor_msgs::image_encodings::RGBA8;
-      bytes_per_pixel=4;
+      ret = sensor_msgs::image_encodings::RGBA8;
+      bytes_per_pixel = 4;
       break;
 
     case RGBa16:
-      ret=sensor_msgs::image_encodings::RGBA16;
-      bytes_per_pixel=8;
+      ret = sensor_msgs::image_encodings::RGBA16;
+      bytes_per_pixel = 8;
       break;
 
     case BGRa8:
-      ret=sensor_msgs::image_encodings::BGRA8;
-      bytes_per_pixel=4;
+      ret = sensor_msgs::image_encodings::BGRA8;
+      bytes_per_pixel = 4;
       break;
 
     case BGRa16:
-      ret=sensor_msgs::image_encodings::BGRA16;
-      bytes_per_pixel=8;
+      ret = sensor_msgs::image_encodings::BGRA16;
+      bytes_per_pixel = 8;
       break;
 
     case YUV422_8:
-      ret=sensor_msgs::image_encodings::YUV422;
-      bytes_per_pixel=2;
+      ret = sensor_msgs::image_encodings::YUV422;
+      bytes_per_pixel = 2;
       break;
 
     default:
-      ret="";
-      bytes_per_pixel=0;
+      ret = "";
+      bytes_per_pixel = 0;
       break;
   }
 
   return ret;
 }
 
-sensor_msgs::ImagePtr rosImageFromBuffer(const std::string &frame_id, const rcg::Buffer* buffer,
-                                         uint32_t part)
+sensor_msgs::ImagePtr rosImageFromBuffer(const std::string& frame_id, const rcg::Buffer* buffer, uint32_t part)
 {
   sensor_msgs::ImagePtr im;
   std::string pixelformat;
@@ -218,4 +217,4 @@ sensor_msgs::ImagePtr rosImageFromBuffer(const std::string &frame_id, const rcg:
   return im;
 }
 
-}
+}  // namespace rcgccam

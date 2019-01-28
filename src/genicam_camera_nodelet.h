@@ -57,12 +57,9 @@
 
 namespace rcgccam
 {
-
 class GenICamCameraNodelet : public nodelet::Nodelet
 {
-
 public:
-
   GenICamCameraNodelet();
   virtual ~GenICamCameraNodelet();
 
@@ -77,7 +74,6 @@ public:
   void syncInfo(sensor_msgs::CameraInfoPtr info);
 
 private:
-
   void grab(std::string device, rcg::Device::ACCESS access, std::string config);
 
   double timestamp_tolerance;
@@ -88,7 +84,7 @@ private:
   ros::ServiceServer get_param_service;
   ros::ServiceServer set_param_service;
 
-  std::string      frame_id;
+  std::string frame_id;
 
   std::shared_ptr<rcg::Device> rcgdev;
   std::shared_ptr<GenApi::CNodeMapRef> rcgnodemap;
@@ -101,10 +97,10 @@ private:
   CameraInfoPublisher caminfo_pub;
   ImagePublisher image_pub;
 
-  std::thread      grab_thread;
+  std::thread grab_thread;
   std::atomic_bool running;
 };
 
-}
+}  // namespace rcgccam
 
 #endif

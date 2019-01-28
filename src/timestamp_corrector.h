@@ -46,12 +46,9 @@ namespace rcgccam
   "Timestamp" to determine the offset between the system clock and the
   camera clock.
 */
-
 class TimestampCorrector
 {
-
 public:
-
   TimestampCorrector();
   ~TimestampCorrector();
 
@@ -62,7 +59,6 @@ public:
 
     @param tol_ns Maximum tolerance in nano seconds, e.g. 10000000 (= 0.01 s)
   */
-
   void setMaximumTolerance(int64_t tol_ns);
 
   /**
@@ -70,7 +66,6 @@ public:
 
     @param interval_ns Interval time in nano seconds, e.g. 1000000000 (= 1 s)
   */
-
   void setInterval(int64_t interval_ns);
 
   /**
@@ -84,8 +79,7 @@ public:
     @return         False if determination of offset cannot be determined with
                     less than the maximum tolerance.
   */
-
-  bool determineOffset(const std::shared_ptr<GenApi::CNodeMapRef> &nodemap);
+  bool determineOffset(const std::shared_ptr<GenApi::CNodeMapRef>& nodemap);
 
   /**
     Correct the given camera timestamp to system time.
@@ -96,11 +90,9 @@ public:
                 determineOffset() has never been called or if it delivered an
                 error on the last call.
   */
-
-  int64_t correct(ros::Time &time);
+  int64_t correct(ros::Time& time);
 
 private:
-
   int64_t tolerance;
   int64_t interval;
 
@@ -110,6 +102,6 @@ private:
   int64_t offset;
 };
 
-}
+}  // namespace rcgccam
 
 #endif

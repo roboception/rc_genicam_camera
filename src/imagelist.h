@@ -41,73 +41,64 @@
 
 namespace rcgccam
 {
-
 class ImageList
 {
-  public:
+public:
+  /**
+    Create an image list.
+  */
+  ImageList();
 
-    /**
-      Create an image list.
-    */
+  /**
+    Set maximum size of the list.
 
-    ImageList();
+    @param maxsize Maximum number of elements that the list can hold. The
+                   default is 25.
+  */
+  void setSize(size_t maxsize);
 
-    /**
-      Set maximum size of the list.
+  /**
+    Set tolerance for finding corresponding timestamps.
 
-      @param maxsize Maximum number of elements that the list can hold. The
-                     default is 25.
-    */
+    @param tolerance Tolerance in nano seconds. Default is 0.
+  */
+  void setTolerance(uint64_t tolerance);
 
-    void setSize(size_t maxsize);
+  /**
+    Adds the given image to the internal list. If the maximum number of
+    elements is exceeded, then the oldest image will be dropped.
 
-    /**
-      Set tolerance for finding corresponding timestamps.
+    @param image Image to be added.
+    @return      Dropped image, null pointer if no image is dropped.
+  */
+  sensor_msgs::ImagePtr add(const sensor_msgs::ImagePtr& image);
 
-      @param tolerance Tolerance in nano seconds. Default is 0.
-    */
+  /**
+    Remove all images that have a timestamp that is older or equal than the
+    given timestamp.
 
-    void setTolerance(uint64_t tolerance);
+    @param timestamp Timestamp.
+    @return          Number of removed images.
+  */
+  int removeOld(const ros::Time& timestamp);
 
-    /**
-      Adds the given image to the internal list. If the maximum number of
-      elements is exceeded, then the oldest image will be dropped.
+  /**
+    Returns the oldest image that has a timestamp within the tolerance of the
+    given timestamp. If the image cannot be found, then a nullptr is
+    returned.
 
-      @param image Image to be added.
-      @return      Dropped image, null pointer if no image is dropped.
-    */
+    @param timestamp Timestamp.
+    @param tolerance Maximum tolarance added or subtracted to the timestamp.
+    @return Pointer to image or 0.
+  */
+  sensor_msgs::ImagePtr find(const ros::Time& timestamp) const;
 
-    sensor_msgs::ImagePtr add(const sensor_msgs::ImagePtr &image);
-
-    /**
-      Remove all images that have a timestamp that is older or equal than the
-      given timestamp.
-
-      @param timestamp Timestamp.
-      @return          Number of removed images.
-    */
-
-    int removeOld(const ros::Time &timestamp);
-
-    /**
-      Returns the oldest image that has a timestamp within the tolerance of the
-      given timestamp. If the image cannot be found, then a nullptr is
-      returned.
-
-      @param timestamp Timestamp.
-      @param tolerance Maximum tolarance added or subtracted to the timestamp.
-      @return Pointer to image or 0.
-    */
-
-    sensor_msgs::ImagePtr find(const ros::Time &timestamp) const;
-
-  private:
-
-    size_t maxsize;
-    uint64_t tolerance;
-    std::vector<sensor_msgs::ImagePtr> list;
+private:
+  size_t maxsize;
+  uint64_t tolerance;
+  std::vector<sensor_msgs::ImagePtr> list;
 };
 
-}
+}  // namespace rcgccam
 
 #endif
