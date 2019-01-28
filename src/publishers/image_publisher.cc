@@ -62,18 +62,121 @@ void ImagePublisher::publish(const sensor_msgs::ImagePtr &image)
   }
 }
 
+std::string rosPixelformat(int &bytes_per_pixel, uint64_t pixelformat)
+{
+  std::string ret;
+
+  switch (pixelformat)
+  {
+    case Mono8:
+      ret=sensor_msgs::image_encodings::MONO8;
+      bytes_per_pixel=1;
+      break;
+
+    case Mono16:
+      ret=sensor_msgs::image_encodings::MONO16;
+      bytes_per_pixel=2;
+      break;
+
+    case BayerBG8:
+      ret=sensor_msgs::image_encodings::BAYER_BGGR8;
+      bytes_per_pixel=1;
+      break;
+
+    case BayerBG16:
+      ret=sensor_msgs::image_encodings::BAYER_BGGR16;
+      bytes_per_pixel=2;
+      break;
+
+    case BayerGB8:
+      ret=sensor_msgs::image_encodings::BAYER_GBRG8;
+      bytes_per_pixel=1;
+      break;
+
+    case BayerGB16:
+      ret=sensor_msgs::image_encodings::BAYER_GBRG16;
+      bytes_per_pixel=2;
+      break;
+
+    case BayerGR8:
+      ret=sensor_msgs::image_encodings::BAYER_GRBG8;
+      bytes_per_pixel=1;
+      break;
+
+    case BayerGR16:
+      ret=sensor_msgs::image_encodings::BAYER_GRBG16;
+      bytes_per_pixel=2;
+      break;
+
+    case BayerRG8:
+      ret=sensor_msgs::image_encodings::BAYER_RGGB8;
+      bytes_per_pixel=1;
+      break;
+
+    case BayerRG16:
+      ret=sensor_msgs::image_encodings::BAYER_RGGB16;
+      bytes_per_pixel=2;
+      break;
+
+    case RGB8:
+      ret=sensor_msgs::image_encodings::RGB8;
+      bytes_per_pixel=3;
+      break;
+
+    case RGB16:
+      ret=sensor_msgs::image_encodings::RGB16;
+      bytes_per_pixel=6;
+      break;
+
+    case RGBa8:
+      ret=sensor_msgs::image_encodings::RGBA8;
+      bytes_per_pixel=4;
+      break;
+
+    case RGBa16:
+      ret=sensor_msgs::image_encodings::RGBA16;
+      bytes_per_pixel=8;
+      break;
+
+    case BGRa8:
+      ret=sensor_msgs::image_encodings::BGRA8;
+      bytes_per_pixel=4;
+      break;
+
+    case BGRa16:
+      ret=sensor_msgs::image_encodings::BGRA16;
+      bytes_per_pixel=8;
+      break;
+
+    case YUV422_8:
+      ret=sensor_msgs::image_encodings::YUV422;
+      bytes_per_pixel=2;
+      break;
+
+    default:
+      ret="";
+      bytes_per_pixel=0;
+      break;
+  }
+
+  return ret;
+}
+
 sensor_msgs::ImagePtr rosImageFromBuffer(const std::string &frame_id, const rcg::Buffer* buffer,
                                          uint32_t part)
 {
   sensor_msgs::ImagePtr im;
+  std::string pixelformat;
+  int bytes_per_pixel;
 
-  uint64_t pixelformat = buffer->getPixelFormat(part);
+  pixelformat = rosPixelformat(bytes_per_pixel, buffer->getPixelFormat(part));
 
-  if (pixelformat == Mono8)
+  if (pixelformat.size() > 0)
   {
     // create image and initialize header
 
     im = boost::make_shared<sensor_msgs::Image>();
+    im->encoding = pixelformat;
 
     const uint64_t freq = 1000000000ul;
     uint64_t time = buffer->getTimestampNS();
@@ -87,35 +190,28 @@ sensor_msgs::ImagePtr rosImageFromBuffer(const std::string &frame_id, const rcg:
 
     im->width = static_cast<uint32_t>(buffer->getWidth(part));
     im->height = static_cast<uint32_t>(buffer->getHeight(part));
-    im->is_bigendian = false;
+    im->is_bigendian = buffer->isBigEndian();
 
     // get pointer to image data in buffer
 
     const uint8_t* ps = static_cast<const uint8_t*>(buffer->getBase(part));
-    size_t pstep = im->width + buffer->getXPadding(part);
+    size_t pstep = im->width * bytes_per_pixel + buffer->getXPadding(part);
 
-    // convert image data
+    // copy image data
 
-    if (pixelformat == Mono8)
+    im->step = im->width * bytes_per_pixel;
+
+    im->data.resize(im->step * im->height);
+    uint8_t* pt = reinterpret_cast<uint8_t*>(&im->data[0]);
+
+    for (uint32_t k = 0; k < im->height; k++)
     {
-      im->encoding = sensor_msgs::image_encodings::MONO8;
-      im->step = im->width * sizeof(uint8_t);
-
-      im->data.resize(im->step * im->height);
-      uint8_t* pt = reinterpret_cast<uint8_t*>(&im->data[0]);
-
-      if (pixelformat == Mono8)  // copy monochrome image
+      for (uint32_t i = 0; i < im->step; i++)
       {
-        for (uint32_t k = 0; k < im->height; k++)
-        {
-          for (uint32_t i = 0; i < im->width; i++)
-          {
-            *pt++ = ps[i];
-          }
-
-          ps += pstep;
-        }
+        *pt++ = ps[i];
       }
+
+      ps += pstep;
     }
   }
 

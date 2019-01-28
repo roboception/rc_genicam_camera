@@ -491,6 +491,10 @@ void GenICamCameraNodelet::grab(std::string device, rcg::Device::ACCESS access, 
                       image_pub.publish(image);
                     }
                   }
+                  else
+                  {
+                    ROS_ERROR_STREAM("rc_genicam_camera: Unsupported pixel format");
+                  }
                 }
               }
 

@@ -74,6 +74,13 @@ private:
 };
 
 /**
+  Translates pixel format from GenICam to ROS. An empty string is returned, if
+  lthe format is not supported.
+*/
+
+std::string rosPixelformat(int &bytes_per_pixel, uint64_t pixelformat);
+
+/**
   Converts a (supported) image in a GenICam buffer into a ROS image.
 */
 
