@@ -95,9 +95,9 @@ public:
   sensor_msgs::CameraInfoPtr find(const ros::Time& timestamp) const;
 
 private:
-  size_t maxsize;
-  uint64_t tolerance;
-  std::vector<sensor_msgs::CameraInfoPtr> list;
+  size_t maxsize_;
+  uint64_t tolerance_;
+  std::vector<sensor_msgs::CameraInfoPtr> list_;
 };
 
 }  // namespace rcgccam

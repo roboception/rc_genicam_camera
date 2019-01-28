@@ -94,9 +94,9 @@ public:
   sensor_msgs::ImagePtr find(const ros::Time& timestamp) const;
 
 private:
-  size_t maxsize;
-  uint64_t tolerance;
-  std::vector<sensor_msgs::ImagePtr> list;
+  size_t maxsize_;
+  uint64_t tolerance_;
+  std::vector<sensor_msgs::ImagePtr> list_;
 };
 
 }  // namespace rcgccam

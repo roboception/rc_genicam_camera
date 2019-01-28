@@ -93,13 +93,13 @@ public:
   int64_t correct(ros::Time& time);
 
 private:
-  int64_t tolerance;
-  int64_t interval;
+  int64_t tolerance_;
+  int64_t interval_;
 
-  int64_t last;
+  int64_t last_;
 
-  int64_t accuracy;
-  int64_t offset;
+  int64_t accuracy_;
+  int64_t offset_;
 };
 
 }  // namespace rcgccam

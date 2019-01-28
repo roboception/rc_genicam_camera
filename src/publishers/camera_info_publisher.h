@@ -65,8 +65,8 @@ private:
   CameraInfoPublisher(const CameraInfoPublisher&);             // forbidden
   CameraInfoPublisher& operator=(const CameraInfoPublisher&);  // forbidden
 
-  sensor_msgs::CameraInfo info;
-  ros::Publisher pub;
+  sensor_msgs::CameraInfo info_;
+  ros::Publisher pub_;
 };
 
 }  // namespace rcgccam

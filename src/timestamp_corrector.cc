@@ -39,13 +39,13 @@ namespace rcgccam
 {
 TimestampCorrector::TimestampCorrector()
 {
-  tolerance = 2 * 10000000ll;
-  interval = 1000000000ll;
+  tolerance_ = 2 * 10000000ll;
+  interval_ = 1000000000ll;
 
-  last = 0;
+  last_ = 0;
 
-  accuracy = -1;
-  offset = 0;
+  accuracy_ = -1;
+  offset_ = 0;
 }
 
 TimestampCorrector::~TimestampCorrector()
@@ -54,12 +54,12 @@ TimestampCorrector::~TimestampCorrector()
 
 void TimestampCorrector::setMaximumTolerance(int64_t tol_ns)
 {
-  tolerance = 2 * tol_ns;
+  tolerance_ = 2 * tol_ns;
 }
 
 void TimestampCorrector::setInterval(int64_t interval_ns)
 {
-  interval = interval_ns;
+  interval_ = interval_ns;
 }
 
 namespace
@@ -77,7 +77,7 @@ bool TimestampCorrector::determineOffset(const std::shared_ptr<GenApi::CNodeMapR
 {
   // do nothing if tolerance is negative
 
-  if (tolerance < 0)
+  if (tolerance_ < 0)
   {
     return true;
   }
@@ -86,53 +86,53 @@ bool TimestampCorrector::determineOffset(const std::shared_ptr<GenApi::CNodeMapR
 
   int64_t now_ns = getClock(CLOCK_MONOTONIC);
 
-  if (accuracy > 0 && now_ns - last <= interval)
+  if (accuracy_ > 0 && now_ns - last_ <= interval_)
   {
     return true;
   }
 
   // determine offset of host and camera clock
 
-  last = now_ns;
+  last_ = now_ns;
 
   int64_t before_ns = 0;
   int64_t after_ns = 0;
 
-  accuracy = tolerance + 1;
+  accuracy_ = tolerance_ + 1;
 
   int n = 3;
-  while (n > 0 && accuracy > tolerance)
+  while (n > 0 && accuracy_ > tolerance_)
   {
     before_ns = getClock(CLOCK_REALTIME);
     rcg::callCommand(nodemap, "TimestampLatch", true);
     after_ns = getClock(CLOCK_REALTIME);
 
-    accuracy = after_ns - before_ns;
+    accuracy_ = after_ns - before_ns;
 
     n--;
   }
 
-  if (accuracy <= tolerance)
+  if (accuracy_ <= tolerance_)
   {
-    offset = before_ns + (accuracy >> 1) - rcg::getInteger(nodemap, "Timestamp");
+    offset_ = before_ns + (accuracy_ >> 1) - rcg::getInteger(nodemap, "Timestamp");
 
     return true;
   }
 
-  accuracy = -1;
-  offset = 0;
+  accuracy_ = -1;
+  offset_ = 0;
 
   return false;
 }
 
 int64_t TimestampCorrector::correct(ros::Time& time)
 {
-  if (tolerance >= 0 && accuracy >= 0)
+  if (tolerance_ >= 0 && accuracy_ >= 0)
   {
     int64_t t = static_cast<int64_t>(time.toNSec());
-    time.fromNSec(static_cast<uint64_t>(t + offset));
+    time.fromNSec(static_cast<uint64_t>(t + offset_));
 
-    return accuracy;
+    return accuracy_;
   }
 
   return -1;

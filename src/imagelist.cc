@@ -41,29 +41,29 @@ namespace rcgccam
 {
 ImageList::ImageList()
 {
-  maxsize = 25;
+  maxsize_ = 25;
 }
 
-void ImageList::setSize(size_t _maxsize)
+void ImageList::setSize(size_t maxsize)
 {
-  maxsize = std::max(static_cast<size_t>(1), _maxsize);
+  maxsize_ = std::max(static_cast<size_t>(1), maxsize);
 }
 
-void ImageList::setTolerance(uint64_t _tolerance)
+void ImageList::setTolerance(uint64_t tolerance_)
 {
-  tolerance = _tolerance;
+  tolerance_ = tolerance_;
 }
 
 sensor_msgs::ImagePtr ImageList::add(const sensor_msgs::ImagePtr& image)
 {
-  list.push_back(image);
+  list_.push_back(image);
 
   sensor_msgs::ImagePtr ret;
 
-  if (list.size() > maxsize)
+  if (list_.size() > maxsize_)
   {
-    ret = list[0];
-    list.erase(list.begin());
+    ret = list_[0];
+    list_.erase(list_.begin());
   }
 
   return ret;
@@ -74,11 +74,11 @@ int ImageList::removeOld(const ros::Time& timestamp)
   size_t i = 0;
   int n = 0;
 
-  while (i < list.size())
+  while (i < list_.size())
   {
-    if (list[i]->header.stamp <= timestamp)
+    if (list_[i]->header.stamp <= timestamp)
     {
-      list.erase(list.begin() + static_cast<int>(i));
+      list_.erase(list_.begin() + static_cast<int>(i));
       n++;
     }
     else
@@ -92,14 +92,14 @@ int ImageList::removeOld(const ros::Time& timestamp)
 
 sensor_msgs::ImagePtr ImageList::find(const ros::Time& timestamp) const
 {
-  for (size_t i = 0; i < list.size(); i++)
+  for (size_t i = 0; i < list_.size(); i++)
   {
     uint64_t ts = timestamp.toNSec();
-    uint64_t image_ts = list[i]->header.stamp.toNSec();
+    uint64_t image_ts = list_[i]->header.stamp.toNSec();
 
-    if (image_ts >= ts - tolerance && image_ts <= ts + tolerance)
+    if (image_ts >= ts - tolerance_ && image_ts <= ts + tolerance_)
     {
-      return list[i];
+      return list_[i];
     }
   }
 

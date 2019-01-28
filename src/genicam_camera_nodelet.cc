@@ -56,21 +56,21 @@ namespace rcgccam
 
 GenICamCameraNodelet::GenICamCameraNodelet()
 {
-  timestamp_tolerance = 0;
-  sync_tolerance = 0;
-  running = false;
+  timestamp_tolerance_ = 0;
+  sync_tolerance_ = 0;
+  running_ = false;
 }
 
 GenICamCameraNodelet::~GenICamCameraNodelet()
 {
   ROS_INFO("rc_genicam_camera: Shutting down");
 
-  // signal running threads and wait until they finish
+  // signal running_ threads and wait until they finish
 
-  running = false;
-  if (grab_thread.joinable())
+  running_ = false;
+  if (grab_thread_.joinable())
   {
-    grab_thread.join();
+    grab_thread_.join();
   }
 
   rcg::System::clearSystems();
@@ -91,7 +91,7 @@ void GenICamCameraNodelet::onInit()
   std::string calib = "";
 
   std::string ns = ros::this_node::getNamespace();
-  frame_id = ns + "camera";
+  frame_id_ = ns + "camera";
 
   pnh.param("device", device, device);
   pnh.param("gev_access", access, access);
@@ -122,56 +122,52 @@ void GenICamCameraNodelet::onInit()
   // optional parameters for timestamp correction
 
   bool host_timestamp = false;
-  timestamp_tolerance = 0.01;
-
   pnh.param("host_timestamp", host_timestamp, host_timestamp);
-  pnh.param("timestamp_tolerance", timestamp_tolerance, timestamp_tolerance);
+  pnh.param("timestamp_tolerance_", timestamp_tolerance_, 0.01);
 
   if (!host_timestamp)
   {
-    timestamp_tolerance = -1;
+    timestamp_tolerance_ = -1;
   }
 
   // optional parameters for timestamp synchronization
 
   std::string sync_info;
-  sync_tolerance = 0.019;
-
   pnh.param("sync_info", sync_info, sync_info);
-  pnh.param("sync_tolerance", sync_tolerance, sync_tolerance);
+  pnh.param("sync_tolerance", sync_tolerance_, 0.019);
 
   if (sync_info.size() > 0)
   {
-    sub_sync_info = nh.subscribe(sync_info, 10, &GenICamCameraNodelet::syncInfo, this);
+    sub_sync_info_ = nh.subscribe(sync_info, 10, &GenICamCameraNodelet::syncInfo, this);
 
-    image_list.setSize(25);
-    image_list.setTolerance(static_cast<uint64_t>(sync_tolerance * 1000000000.0));
+    image_list_.setSize(25);
+    image_list_.setTolerance(static_cast<uint64_t>(sync_tolerance_ * 1000000000.0));
 
-    info_list.setSize(25);
-    info_list.setTolerance(static_cast<uint64_t>(sync_tolerance * 1000000000.0));
+    info_list_.setSize(25);
+    info_list_.setTolerance(static_cast<uint64_t>(sync_tolerance_ * 1000000000.0));
   }
   else
   {
-    sync_tolerance = -1;
+    sync_tolerance_ = -1;
   }
 
   // setup service for getting and setting parameters
 
-  get_param_service = pnh.advertiseService("get_genicam_parameter", &GenICamCameraNodelet::getGenICamParameter, this);
+  get_param_service_ = pnh.advertiseService("get_genicam_parameter", &GenICamCameraNodelet::getGenICamParameter, this);
 
-  set_param_service = pnh.advertiseService("set_genicam_parameter", &GenICamCameraNodelet::setGenICamParameter, this);
+  set_param_service_ = pnh.advertiseService("set_genicam_parameter", &GenICamCameraNodelet::setGenICamParameter, this);
 
   // initialize publishers
 
-  caminfo_pub.init(nh, calib.c_str());
+  caminfo_pub_.init(nh, calib.c_str());
 
   image_transport::ImageTransport it(nh);
-  image_pub.init(it);
+  image_pub_.init(it);
 
   // start grabbing threads
 
-  running = true;
-  grab_thread = std::thread(&GenICamCameraNodelet::grab, this, device, access_id, config);
+  running_ = true;
+  grab_thread_ = std::thread(&GenICamCameraNodelet::grab, this, device, access_id, config);
 }
 
 namespace
@@ -249,13 +245,13 @@ void applyParameters(const std::shared_ptr<GenApi::CNodeMapRef>& nodemap, const 
 bool GenICamCameraNodelet::getGenICamParameter(rc_genicam_camera::GetGenICamParameter::Request& req,
                                                rc_genicam_camera::GetGenICamParameter::Response& resp)
 {
-  std::lock_guard<std::mutex> lock(device_mtx);
+  std::lock_guard<std::mutex> lock(device_mtx_);
 
-  if (rcgnodemap)
+  if (rcgnodemap_)
   {
     try
     {
-      resp.value = rcg::getString(rcgnodemap, req.name.c_str(), true);
+      resp.value = rcg::getString(rcgnodemap_, req.name.c_str(), true);
       resp.return_code.value = resp.return_code.SUCCESS;
       resp.return_code.message = "ok";
     }
@@ -274,13 +270,13 @@ bool GenICamCameraNodelet::getGenICamParameter(rc_genicam_camera::GetGenICamPara
 bool GenICamCameraNodelet::setGenICamParameter(rc_genicam_camera::SetGenICamParameter::Request& req,
                                                rc_genicam_camera::SetGenICamParameter::Response& resp)
 {
-  std::lock_guard<std::mutex> lock(device_mtx);
+  std::lock_guard<std::mutex> lock(device_mtx_);
 
-  if (rcgnodemap)
+  if (rcgnodemap_)
   {
     try
     {
-      applyParameters(rcgnodemap, req.parameters);
+      applyParameters(rcgnodemap_, req.parameters);
 
       resp.return_code.value = resp.return_code.SUCCESS;
       resp.return_code.message = "ok";
@@ -302,18 +298,18 @@ void GenICamCameraNodelet::syncInfo(sensor_msgs::CameraInfoPtr info)
   sensor_msgs::ImagePtr image;
 
   {
-    std::lock_guard<std::mutex> lock(sync_mtx);
+    std::lock_guard<std::mutex> lock(sync_mtx_);
 
     // find image that corresponds to camera info
 
-    image = image_list.find(info->header.stamp);
+    image = image_list_.find(info->header.stamp);
 
     if (image != 0)
     {
       // remove all older images and infos
 
-      int n = image_list.removeOld(image->header.stamp) - 1;
-      info_list.removeOld(info->header.stamp);
+      int n = image_list_.removeOld(image->header.stamp) - 1;
+      info_list_.removeOld(info->header.stamp);
 
       if (n > 0)
       {
@@ -328,7 +324,7 @@ void GenICamCameraNodelet::syncInfo(sensor_msgs::CameraInfoPtr info)
     {
       // store info
 
-      info_list.add(info);
+      info_list_.add(info);
     }
   }
 
@@ -336,8 +332,8 @@ void GenICamCameraNodelet::syncInfo(sensor_msgs::CameraInfoPtr info)
 
   if (image)
   {
-    caminfo_pub.publish(image);
-    image_pub.publish(image);
+    caminfo_pub_.publish(image);
+    image_pub_.publish(image);
   }
 }
 
@@ -354,37 +350,37 @@ void GenICamCameraNodelet::grab(std::string device, rcg::Device::ACCESS access, 
     // initialize optional timestamp correction
 
     TimestampCorrector ts_host;
-    ts_host.setMaximumTolerance(static_cast<int64_t>(timestamp_tolerance * 1000000000));
+    ts_host.setMaximumTolerance(static_cast<int64_t>(timestamp_tolerance_ * 1000000000));
     ts_host.setInterval(1000000000ll);
 
     // loop until nodelet is killed
 
-    while (running)
+    while (running_)
     {
       // report standard exceptions and try again
 
       try
       {
         {
-          std::lock_guard<std::mutex> lock(device_mtx);
+          std::lock_guard<std::mutex> lock(device_mtx_);
 
           // open device and get nodemap
 
-          rcgdev = rcg::getDevice(device.c_str());
+          rcgdev_ = rcg::getDevice(device.c_str());
 
-          if (!rcgdev)
+          if (!rcgdev_)
           {
             throw std::invalid_argument("Cannot find device");
           }
 
-          rcgdev->open(access);
-          rcgnodemap = rcgdev->getRemoteNodeMap();
+          rcgdev_->open(access);
+          rcgnodemap_ = rcgdev_->getRemoteNodeMap();
 
           // initialize camera
 
           try
           {
-            applyParameters(rcgnodemap, init_params);
+            applyParameters(rcgnodemap_, init_params);
           }
           catch (const std::exception& ex)
           {
@@ -394,16 +390,16 @@ void GenICamCameraNodelet::grab(std::string device, rcg::Device::ACCESS access, 
 
         // initialize timestamp correction
 
-        if (!ts_host.determineOffset(rcgnodemap))
+        if (!ts_host.determineOffset(rcgnodemap_))
         {
           ROS_ERROR_STREAM(
               "rc_genicam_camera: Cannot determine offset between host and camera clock with maximum tolerance of "
-              << timestamp_tolerance << " s");
+              << timestamp_tolerance_ << " s");
         }
 
         // start streaming
 
-        std::vector<std::shared_ptr<rcg::Stream> > stream = rcgdev->getStreams();
+        std::vector<std::shared_ptr<rcg::Stream> > stream = rcgdev_->getStreams();
 
         if (stream.size() == 0)
         {
@@ -417,7 +413,7 @@ void GenICamCameraNodelet::grab(std::string device, rcg::Device::ACCESS access, 
 
         // grabbing thread
 
-        while (running)
+        while (running_)
         {
           const rcg::Buffer* buffer = stream[0]->grab(50);
 
@@ -432,7 +428,7 @@ void GenICamCameraNodelet::grab(std::string device, rcg::Device::ACCESS access, 
                 {
                   // convert image to ROS
 
-                  sensor_msgs::ImagePtr image = rosImageFromBuffer(frame_id, buffer, part);
+                  sensor_msgs::ImagePtr image = rosImageFromBuffer(frame_id_, buffer, part);
 
                   if (image)
                   {
@@ -443,20 +439,20 @@ void GenICamCameraNodelet::grab(std::string device, rcg::Device::ACCESS access, 
                     // optionally take timestamp of approximately synchronized
                     // camera info
 
-                    if (sync_tolerance > 0)
+                    if (sync_tolerance_ > 0)
                     {
-                      std::lock_guard<std::mutex> lock(sync_mtx);
+                      std::lock_guard<std::mutex> lock(sync_mtx_);
 
                       // find camera info that corresponds to the image
 
-                      sensor_msgs::CameraInfoPtr info = info_list.find(image->header.stamp);
+                      sensor_msgs::CameraInfoPtr info = info_list_.find(image->header.stamp);
 
                       if (info != 0)
                       {
                         // remove all older images and infos
 
-                        int n = image_list.removeOld(image->header.stamp);
-                        info_list.removeOld(info->header.stamp);
+                        int n = image_list_.removeOld(image->header.stamp);
+                        info_list_.removeOld(info->header.stamp);
 
                         if (n > 0)
                         {
@@ -472,7 +468,7 @@ void GenICamCameraNodelet::grab(std::string device, rcg::Device::ACCESS access, 
                         // store image in internal list for later
                         // synchronization to camera info
 
-                        image = image_list.add(image);
+                        image = image_list_.add(image);
 
                         if (image)
                         {
@@ -487,8 +483,8 @@ void GenICamCameraNodelet::grab(std::string device, rcg::Device::ACCESS access, 
 
                     if (image)
                     {
-                      caminfo_pub.publish(image);
-                      image_pub.publish(image);
+                      caminfo_pub_.publish(image);
+                      image_pub_.publish(image);
                     }
                   }
                   else
@@ -500,11 +496,11 @@ void GenICamCameraNodelet::grab(std::string device, rcg::Device::ACCESS access, 
 
               // re-determine offset of host and camera clock
 
-              if (!ts_host.determineOffset(rcgnodemap))
+              if (!ts_host.determineOffset(rcgnodemap_))
               {
                 ROS_ERROR_STREAM("rc_genicam_camera: Cannot determine offset between host and camera clock with "
                                  "maximum tolerance of "
-                                 << timestamp_tolerance << " s");
+                                 << timestamp_tolerance_ << " s");
               }
             }
             else
@@ -528,13 +524,13 @@ void GenICamCameraNodelet::grab(std::string device, rcg::Device::ACCESS access, 
       // close device
 
       {
-        std::lock_guard<std::mutex> lock(device_mtx);
+        std::lock_guard<std::mutex> lock(device_mtx_);
 
-        if (rcgdev)
-          rcgdev->close();
+        if (rcgdev_)
+          rcgdev_->close();
 
-        rcgdev.reset();
-        rcgnodemap.reset();
+        rcgdev_.reset();
+        rcgnodemap_.reset();
       }
     }
   }
@@ -547,7 +543,7 @@ void GenICamCameraNodelet::grab(std::string device, rcg::Device::ACCESS access, 
     ROS_FATAL_STREAM("rc_genicam_camera: Unknown exception");
   }
 
-  running = false;
+  running_ = false;
   ROS_INFO("rc_genicam_camera: Grabbing thread stopped");
 }
 

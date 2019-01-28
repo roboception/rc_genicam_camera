@@ -46,19 +46,19 @@ ImagePublisher::ImagePublisher()
 
 void ImagePublisher::init(image_transport::ImageTransport& it)
 {
-  pub = it.advertise("image_raw", 1);
+  pub_ = it.advertise("image_raw", 1);
 }
 
 bool ImagePublisher::used()
 {
-  return pub.getNumSubscribers() > 0;
+  return pub_.getNumSubscribers() > 0;
 }
 
 void ImagePublisher::publish(const sensor_msgs::ImagePtr& image)
 {
-  if (image && pub.getNumSubscribers() > 0)
+  if (image && pub_.getNumSubscribers() > 0)
   {
-    pub.publish(image);
+    pub_.publish(image);
   }
 }
 

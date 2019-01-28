@@ -64,8 +64,7 @@ private:
   ImagePublisher(const ImagePublisher&);             // forbidden
   ImagePublisher& operator=(const ImagePublisher&);  // forbidden
 
-  std::string frame_id;
-  image_transport::Publisher pub;
+  image_transport::Publisher pub_;
 };
 
 /**

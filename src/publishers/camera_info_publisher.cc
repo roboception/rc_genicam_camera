@@ -211,10 +211,10 @@ void CameraInfoPublisher::init(ros::NodeHandle& nh, const char* calib_file)
 
     if (loadFile(data, calib_file))
     {
-      getValue(data, "camera.width", info.width, "0");
-      getValue(data, "camera.height", info.width, "0");
+      getValue(data, "camera.width", info_.width, "0");
+      getValue(data, "camera.height", info_.width, "0");
 
-      if (!getMatrix33(data, "camera.A", info.K))
+      if (!getMatrix33(data, "camera.A", info_.K))
       {
         ROS_ERROR("Getting camera.A from calibration file failed");
         return;
@@ -229,13 +229,13 @@ void CameraInfoPublisher::init(ros::NodeHandle& nh, const char* calib_file)
 
       if (e1 != 0 || e2 != 0 || e3 != 0 || e4 != 0)
       {
-        info.distortion_model = "equidistant";
-        info.D.resize(4);
+        info_.distortion_model = "equidistant";
+        info_.D.resize(4);
 
-        info.D[0] = e1;
-        info.D[1] = e2;
-        info.D[2] = e3;
-        info.D[3] = e4;
+        info_.D[0] = e1;
+        info_.D[1] = e2;
+        info_.D[2] = e3;
+        info_.D[3] = e4;
       }
       else
       {
@@ -247,63 +247,63 @@ void CameraInfoPublisher::init(ros::NodeHandle& nh, const char* calib_file)
         getValue(data, "camera.p1", p1, "0");
         getValue(data, "camera.p2", p2, "0");
 
-        info.distortion_model = "plumb_bob";
-        info.D.resize(5);
+        info_.distortion_model = "plumb_bob";
+        info_.D.resize(5);
 
-        info.D[0] = k1;
-        info.D[1] = k2;
-        info.D[2] = k3;
-        info.D[3] = p1;
-        info.D[4] = p2;
+        info_.D[0] = k1;
+        info_.D[1] = k2;
+        info_.D[2] = k3;
+        info_.D[3] = p1;
+        info_.D[4] = p2;
       }
 
-      info.R[0] = 1;
-      info.R[1] = 0;
-      info.R[2] = 0;
-      info.R[3] = 0;
-      info.R[4] = 1;
-      info.R[5] = 0;
-      info.R[6] = 0;
-      info.R[7] = 0;
-      info.R[8] = 1;
+      info_.R[0] = 1;
+      info_.R[1] = 0;
+      info_.R[2] = 0;
+      info_.R[3] = 0;
+      info_.R[4] = 1;
+      info_.R[5] = 0;
+      info_.R[6] = 0;
+      info_.R[7] = 0;
+      info_.R[8] = 1;
 
-      info.P[0] = info.K[0];
-      info.P[1] = info.K[1];
-      info.P[2] = info.K[2];
-      info.P[3] = 0;
-      info.P[4] = info.K[3];
-      info.P[5] = info.K[4];
-      info.P[6] = info.K[5];
-      info.P[7] = 0;
-      info.P[8] = info.K[6];
-      info.P[9] = info.K[7];
-      info.P[10] = info.K[8];
-      info.P[11] = 0;
+      info_.P[0] = info_.K[0];
+      info_.P[1] = info_.K[1];
+      info_.P[2] = info_.K[2];
+      info_.P[3] = 0;
+      info_.P[4] = info_.K[3];
+      info_.P[5] = info_.K[4];
+      info_.P[6] = info_.K[5];
+      info_.P[7] = 0;
+      info_.P[8] = info_.K[6];
+      info_.P[9] = info_.K[7];
+      info_.P[10] = info_.K[8];
+      info_.P[11] = 0;
 
-      info.binning_x = 1;
-      info.binning_y = 1;
+      info_.binning_x = 1;
+      info_.binning_y = 1;
 
       // advertise topic
 
-      pub = nh.advertise<sensor_msgs::CameraInfo>("camera_info", 1);
+      pub_ = nh.advertise<sensor_msgs::CameraInfo>("camera_info", 1);
     }
   }
 }
 
 bool CameraInfoPublisher::used()
 {
-  return pub.getNumSubscribers() > 0;
+  return pub_.getNumSubscribers() > 0;
 }
 
 void CameraInfoPublisher::publish(const sensor_msgs::ImagePtr& image)
 {
-  if (image && pub.getNumSubscribers() > 0)
+  if (image && pub_.getNumSubscribers() > 0)
   {
-    info.header = image->header;
-    info.width = image->width;
-    info.height = image->height;
+    info_.header = image->header;
+    info_.width = image->width;
+    info_.height = image->height;
 
-    pub.publish(info);
+    pub_.publish(info_);
   }
 }
 

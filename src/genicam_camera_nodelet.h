@@ -76,29 +76,29 @@ public:
 private:
   void grab(std::string device, rcg::Device::ACCESS access, std::string config);
 
-  double timestamp_tolerance;
-  double sync_tolerance;
+  double timestamp_tolerance_;
+  double sync_tolerance_;
 
-  ros::Subscriber sub_sync_info;
+  ros::Subscriber sub_sync_info_;
 
-  ros::ServiceServer get_param_service;
-  ros::ServiceServer set_param_service;
+  ros::ServiceServer get_param_service_;
+  ros::ServiceServer set_param_service_;
 
-  std::string frame_id;
+  std::string frame_id_;
 
-  std::shared_ptr<rcg::Device> rcgdev;
-  std::shared_ptr<GenApi::CNodeMapRef> rcgnodemap;
-  std::mutex device_mtx;
+  std::shared_ptr<rcg::Device> rcgdev_;
+  std::shared_ptr<GenApi::CNodeMapRef> rcgnodemap_;
+  std::mutex device_mtx_;
 
-  ImageList image_list;
-  CameraInfoList info_list;
-  std::mutex sync_mtx;
+  ImageList image_list_;
+  CameraInfoList info_list_;
+  std::mutex sync_mtx_;
 
-  CameraInfoPublisher caminfo_pub;
-  ImagePublisher image_pub;
+  CameraInfoPublisher caminfo_pub_;
+  ImagePublisher image_pub_;
 
-  std::thread grab_thread;
-  std::atomic_bool running;
+  std::thread grab_thread_;
+  std::atomic_bool running_;
 };
 
 }  // namespace rcgccam
