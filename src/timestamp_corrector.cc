@@ -114,7 +114,14 @@ bool TimestampCorrector::determineOffset(const std::shared_ptr<GenApi::CNodeMapR
 
   if (accuracy_ <= tolerance_)
   {
-    offset_ = before_ns + (accuracy_ >> 1) - rcg::getInteger(nodemap, "Timestamp");
+    int64_t ts = rcg::getInteger(nodemap, "TimestampLatchValue");
+
+    if (ts == 0)
+    {
+      ts = rgc::getInteger(nodemap, "Timestamp"); // fallback for Matrix Vision USB3 cameras
+    }
+
+    offset_ = before_ns + (accuracy_ >> 1) - ts;
 
     return true;
   }

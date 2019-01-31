@@ -43,8 +43,8 @@ namespace rcgccam
 
 /**
   This class uses the GenICam command "TimestampLatch" and the parameter
-  "Timestamp" to determine the offset between the system clock and the
-  camera clock.
+  "TimestampLatchValue" to determine the offset between the system clock and
+  the camera clock.
 */
 class TimestampCorrector
 {
