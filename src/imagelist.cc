@@ -49,9 +49,9 @@ void ImageList::setSize(size_t maxsize)
   maxsize_ = std::max(static_cast<size_t>(1), maxsize);
 }
 
-void ImageList::setTolerance(uint64_t tolerance_)
+void ImageList::setTolerance(uint64_t tolerance)
 {
-  tolerance_ = tolerance_;
+  tolerance_ = tolerance;
 }
 
 sensor_msgs::ImagePtr ImageList::add(const sensor_msgs::ImagePtr& image)
