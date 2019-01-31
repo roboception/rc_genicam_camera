@@ -45,25 +45,45 @@ Parameters to be set to the ROS param server before run-time.
 
    # Calibration matrix
 
-   camera.A=[<fx> <skew> <u0>; 0 <fy> <v0>; 0 0 1]
-   camera.width=<w>
-   camera.height=<h>
+   camera{.<id>}.A=[<fx> <skew> <u0>; 0 <fy> <v0>; 0 0 1]
+   camera{.<id>}.width=<w>
+   camera{.<id>}.height=<h>
 
    # Optional parameters for radial and tangential distortion. Missing
    # parameters are assumed to be 0
 
-   camera.k1=<k1>
-   camera.k2=<k2>
-   camera.k3=<k3>
-   camera.p1=<p1>
-   camera.p2=<p2>
+   camera{.<id>}.k1=<k1>
+   camera{.<id>}.k2=<k2>
+   camera{.<id>}.k3=<k3>
+   camera{.<id>}.p1=<p1>
+   camera{.<id>}.p2=<p2>
 
    # Alternative optional parameters for equidistant distortion model
 
-   camera.e1=<e1>
-   camera.e2=<e2>
-   camera.e3=<e3>
-   camera.e4=<e4>
+   camera{.<id>}.e1=<e1>
+   camera{.<id>}.e2=<e2>
+   camera{.<id>}.e3=<e3>
+   camera{.<id>}.e4=<e4>
+
+   # Extrinsic position of orientation of camera (only relevant for stereo,
+   # i.e. if <id> is given). The extrinsic transformations are defined by
+   # Pw = camera.0.R * P0 + camera.0.T and Pw = camera.1.R * P1 + camera.1.T
+
+   camera{.<id>}.R=[<r00> <r01> <r02>; <r10> <r11> <r12>; <r20> <r21> <r22>]
+   camera{.<id>}.T=[<tx> <ty> <tz>]
+
+   # Optionally the focal length in pixel for rectification. By default, the
+   # focal length is computed as average of <fx> and <fy>.
+
+   rect.f=<f>
+
+   <id> is the number that is specified by `calib_id`. If it is 0 or 1, then
+   the extrinsic relationship camera.0.R, camera.0.T and camera.1.R, camera.1.T
+   is used for defining the rectification rotation matrix in CameraInfo.
+
+* `calib_id`: ID of camera. A calibration file for a mono camera is expected if
+  ID < 0. For stereo systems, 0 is used for the left camera and 1 for the right
+  camera. Default: -1.
 
 #### Parameters for Synchronization
 
@@ -73,8 +93,8 @@ synchronized to the system clock.
 
 * `host_timestamp`: True for using the host time stamp instead of the camera
   timestamp as image acquisition timestamp. This requires the availability of
-  the command "TimestampLatch" and the parameter "Timestamp" in the nodemap of
-  the camera.
+  the command "TimestampLatch" and the parameter "TimestampLatchValue" in the
+  nodemap of the camera.
 
   Default: false
 

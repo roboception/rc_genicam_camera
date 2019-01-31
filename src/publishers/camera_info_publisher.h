@@ -54,8 +54,10 @@ public:
     @param calib_file      Path and name of calibration file. The topic is not
                            advertised and nothing is published if the
                            calibration cannot be loaded from this file.
+    @param id              Camera ID, i.e. < 0 for no ID, 0 for left and 1 for
+                           right camera.
   */
-  void init(ros::NodeHandle& nh, const char* calib_file = 0);
+  void init(ros::NodeHandle& nh, const char* calib_file, int id);
 
   bool used();
 

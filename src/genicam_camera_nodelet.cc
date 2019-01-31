@@ -2,7 +2,7 @@
  * Copyright (c) 2019 Roboception GmbH
  * All rights reserved
  *
- * Author: Heiko Hirschmueller, Christian Emmerich
+ * Author: Heiko Hirschmueller
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -89,6 +89,7 @@ void GenICamCameraNodelet::onInit()
   std::string access = "control";
   std::string config = "";
   std::string calib = "";
+  int calib_id=-1;
 
   std::string ns = ros::this_node::getNamespace();
   frame_id_ = ns + "camera";
@@ -97,6 +98,7 @@ void GenICamCameraNodelet::onInit()
   pnh.param("gev_access", access, access);
   pnh.param("config_file", config, config);
   pnh.param("calib_file", calib, calib);
+  pnh.param("calib_id", calib_id, calib_id);
 
   if (device.size() == 0)
   {
@@ -159,7 +161,7 @@ void GenICamCameraNodelet::onInit()
 
   // initialize publishers
 
-  caminfo_pub_.init(nh, calib.c_str());
+  caminfo_pub_.init(nh, calib.c_str(), calib_id);
 
   image_transport::ImageTransport it(nh);
   image_pub_.init(it);
@@ -472,7 +474,7 @@ void GenICamCameraNodelet::grab(std::string device, rcg::Device::ACCESS access, 
 
                         if (image)
                         {
-                          ROS_WARN_STREAM("rc_genicam_camera: Input queue full, dropping image");
+                          ROS_WARN_THROTTLE(10, "rc_genicam_camera: Input queue full, dropping image");
                         }
 
                         image.reset();

@@ -57,9 +57,12 @@
 
 namespace rcgccam
 {
+
 class GenICamCameraNodelet : public nodelet::Nodelet
 {
+
 public:
+
   GenICamCameraNodelet();
   virtual ~GenICamCameraNodelet();
 
@@ -74,6 +77,7 @@ public:
   void syncInfo(sensor_msgs::CameraInfoPtr info);
 
 private:
+
   void grab(std::string device, rcg::Device::ACCESS access, std::string config);
 
   double timestamp_tolerance_;

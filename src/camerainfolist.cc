@@ -95,9 +95,9 @@ sensor_msgs::CameraInfoPtr CameraInfoList::find(const ros::Time& timestamp) cons
   for (size_t i = 0; i < list_.size(); i++)
   {
     uint64_t ts = timestamp.toNSec();
-    uint64_t image_ts = list_[i]->header.stamp.toNSec();
+    uint64_t info_ts = list_[i]->header.stamp.toNSec();
 
-    if (image_ts >= ts - tolerance_ && image_ts <= ts + tolerance_)
+    if (info_ts >= ts - tolerance_ && info_ts <= ts + tolerance_)
     {
       return list_[i];
     }
