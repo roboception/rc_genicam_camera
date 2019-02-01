@@ -557,8 +557,12 @@ void CameraInfoPublisher::publish(const sensor_msgs::ImagePtr& image)
   if (image && pub_.getNumSubscribers() > 0)
   {
     info_.header = image->header;
-    info_.width = image->width;
-    info_.height = image->height;
+
+    if (info_.K[0] == 0)
+    {
+      info_.width = image->width;
+      info_.height = image->height;
+    }
 
     pub_.publish(info_);
   }
