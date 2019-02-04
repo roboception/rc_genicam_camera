@@ -9,13 +9,9 @@ before_script:
 variables:
   GET_SOURCES_ATTEMPTS: "3"
 
-stages:
-  - test
-  - package
-
-##################
-# Anchor templates
-##################
+#########################
+# Templates using anchors
+#########################
 .amd64_trusty_t: &amd64_trusty_job
   image: registry.roboception.de/tools/docker_images:indigo-perception-pcl
   tags:
@@ -51,8 +47,6 @@ stages:
 #############
 .test:
   stage: test
-  variables:
-    PACKAGE: "rc_genicam_camera"
   script:
     - mkdir build && cd build
     - cmake ..
@@ -82,9 +76,7 @@ stages:
 
 # Debian packaging
 .package:
-  stage: package
-  variables:
-    PACKAGE: "rc_genicam_camera"
+  stage: deploy
   script:
     - mkdir build && cd build
     - cmake -DCATKIN_BUILD_BINARY_PACKAGE="1" -DCMAKE_INSTALL_PREFIX="/opt/ros/$ROS_DISTRO" -DCMAKE_PREFIX_PATH="/opt/ros/$ROS_DISTRO" -DCMAKE_BUILD_TYPE=Release ..
@@ -97,6 +89,8 @@ stages:
   extends: .package
   only:
     - master
+  except:
+    - tags
   variables:
     TESTING_DEBS: "true"
     APT_REPO: "testing"
@@ -110,44 +104,23 @@ stages:
   variables:
     APT_REPO: "stable"
 
-# Docker image
-.docker_build:
-  image: docker:latest
-  stage: image
-  variables:
-    PACKAGE: "rc_genicam_camera"
-    ROS_DISTRO: "kinetic"
-    RC_REPO: testing
-    DOCKERFILE: "Dockerfile"
-    DOCKERFILE_DIR: "."
-  before_script:
-    - docker info
-    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
-    - if [ -z "$IMAGE" ]; then export IMAGE=$CI_REGISTRY_IMAGE/$PACKAGE/$ROS_DISTRO ; fi
-    - if [ -n "$CI_COMMIT_TAG" ]; then export IMAGE_TAG=$CI_COMMIT_TAG ; else export IMAGE_TAG=$CI_COMMIT_REF_SLUG ; fi
-    - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then export IMAGE_TAG=testing ; fi
-    - if [ -z "$DOCKER_BUILD_FLAGS" ]; then export DOCKER_BUILD_FLAGS="--pull --no-cache --build-arg ROS_DISTRO=$ROS_DISTRO --build-arg RC_REPO=$RC_REPO"; fi
-  script:
-    - echo "building docker image $IMAGE:$IMAGE_TAG with flags $DOCKER_BUILD_FLAGS"
-    - docker build $DOCKER_BUILD_FLAGS -t $IMAGE:$IMAGE_TAG -f $DOCKERFILE $DOCKERFILE_DIR
-    - docker push $IMAGE:$IMAGE_TAG
-    - if [ -n "$CI_COMMIT_TAG" ]; then docker tag $IMAGE:$IMAGE_TAG $IMAGE:latest ; docker push $IMAGE:latest ; fi
-  tags:
-    - docker-build
-
-.docker_build_stable:
-  extends: .docker_build
-  variables:
-    RC_REPO: stable
-  only:
-    - /^v[0-9]+\.[0-9]+\.[0-9]+/
-  except:
-    - branches
-    - schedules
-
 ##############
 #### Jobs ####
 ##############
+gen_dox:
+  <<: *amd64_trusty_job
+  variables:
+    TESTING_DEBS: "true"
+  stage: deploy
+  script:
+    - apt-get install -y doxygen ncftp ros-${ROS_DISTRO}-rosdoc-lite
+    - rosdoc_lite .
+    - upload_dox.sh doc/html
+  only:
+    - master
+    - tags
+  tags:
+    - docs
 
 ################
 # Testing builds
