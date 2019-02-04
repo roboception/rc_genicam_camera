@@ -1,4 +1,3 @@
-
 rc_genicam_camera
 -----------------
 
@@ -29,6 +28,7 @@ Parameters to be set to the ROS param server before run-time.
   contains a one or more GenICam parameters or commands, separated by white
   spaces (e.g. space, return):
 
+  ```
   <name>=<value> sets the given value to the parameter with the given name. It
                  must not contain a white space.
 
@@ -36,6 +36,7 @@ Parameters to be set to the ROS param server before run-time.
                  not contain any white space.
 
   # ... \n       Comment which is skipped.
+  ```
 
   Processing stops on the first error, which is reported in the logfile.
 
@@ -43,6 +44,7 @@ Parameters to be set to the ROS param server before run-time.
    contains the camera calibration. The information is used for the CameraInfo
    messages:
 
+   ```
    # Calibration matrix
 
    camera{.<id>}.A=[<fx> <skew> <u0>; 0 <fy> <v0>; 0 0 1]
@@ -76,8 +78,9 @@ Parameters to be set to the ROS param server before run-time.
    # focal length is computed as average of <fx> and <fy>.
 
    rect.f=<f>
-
-   <id> is the number that is specified by `calib_id`. If it is 0 or 1, then
+   ```
+   
+   \<id\> is the number that is specified by `calib_id`. If it is 0 or 1, then
    the extrinsic relationship camera.0.R, camera.0.T and camera.1.R, camera.1.T
    is used for defining the rectification rotation matrix in CameraInfo.
 
@@ -121,10 +124,10 @@ synchronized to the system clock.
 Subscribed Topics
 -----------------
 
-If `reset_info` AND `sync_info` parameters are defined, then their values are
-used to subscribe to these topics for determining the image timestamp.
+If the `sync_info` parameter is defined, then its value is used as name of a
+topic that provides CameraInfo messages. The timestamp of these messages are
+used for the images.
 
-* <reset_info> (sensor_msgs::CameraInfo)
 * <sync_info> (sensor_msgs::CameraInfo)
 
 Provided Topics
