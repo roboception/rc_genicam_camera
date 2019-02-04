@@ -152,7 +152,7 @@ gen_dox:
   <<: *amd64_trusty_job
   variables:
     TESTING_DEBS: "true"
-  stage: package
+  stage: deploy
   script:
     - apt-get install -y doxygen ncftp
     - mkdir build && cd build
