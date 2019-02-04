@@ -182,9 +182,15 @@ std::string loadConfig(const std::string& filename)
   {
     std::ifstream in(filename);
     std::stringstream buffer;
-    buffer << in.rdbuf();
 
-    return buffer.str();
+    if (in)
+    {
+      buffer << in.rdbuf();
+    }
+    else
+    {
+      ROS_ERROR_STREAM("rc_genicam_camera: Cannot load config: " << filename);
+    }
   }
 
   return std::string();

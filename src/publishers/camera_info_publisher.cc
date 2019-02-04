@@ -544,6 +544,10 @@ void CameraInfoPublisher::init(ros::NodeHandle& nh, const char* calib_file, int 
       info_.binning_x = 1;
       info_.binning_y = 1;
     }
+    else
+    {
+      ROS_ERROR_STREAM("gc_genicam_camera: Cannot load camera calibration: " << calib_file);
+    }
   }
 }
 
