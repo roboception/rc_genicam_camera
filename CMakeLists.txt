@@ -21,6 +21,9 @@ endif ()
 add_definitions(-Wall)
 add_definitions(-Wno-unknown-pragmas)
 
+# add a target to generate API documentation with Doxygen
+add_subdirectory(doc)
+
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
