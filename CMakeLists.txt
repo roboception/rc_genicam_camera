@@ -112,6 +112,6 @@ install(FILES
 ######################################
 # optionally specify dependencies of the debian package here (comma separated!)
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS OFF) # to prevent automatic addition of libs that are ORed in dependencies
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "rc-genicam-api (>= 2.0.3) | ros-$ENV{ROS_DISTRO}-rc-genicam-api (>= 2.0.3), ros-$ENV{ROS_DISTRO}-image-pipeline, libgcc1 (>= 1:3.0)")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "rc-genicam-api (>= 2.0.3) | ros-$ENV{ROS_DISTRO}-rc-genicam-api (>= 2.0.3), ros-$ENV{ROS_DISTRO}-image-pipeline")
 
 include(cmake/package_debian.cmake)
