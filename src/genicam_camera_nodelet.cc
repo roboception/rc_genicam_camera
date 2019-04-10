@@ -186,6 +186,7 @@ std::string loadConfig(const std::string& filename)
     if (in)
     {
       buffer << in.rdbuf();
+      return buffer.str();
     }
     else
     {
