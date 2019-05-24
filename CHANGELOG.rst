@@ -1,3 +1,11 @@
+1.2.0 (2019-05-24)
+------------------
+
+* Fixed failing of loading initial GenICam parameters
+* Fixed readme.
+* Generate documentation too
+* Report errors if config or calibration file cannot be loaded
+
 1.1.0 (2019-02-01)
 ------------------
 
