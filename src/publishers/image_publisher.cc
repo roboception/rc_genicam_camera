@@ -203,14 +203,19 @@ sensor_msgs::ImagePtr rosImageFromBuffer(const std::string& frame_id, const rcg:
     im->data.resize(im->step * im->height);
     uint8_t* pt = reinterpret_cast<uint8_t*>(&im->data[0]);
 
-    for (uint32_t k = 0; k < im->height; k++)
+    if (im->step != pstep)
     {
-      for (uint32_t i = 0; i < im->step; i++)
+      for (uint32_t k = 0; k < im->height; k++)
       {
-        *pt++ = ps[i];
-      }
+        memcpy(pt, ps, im->step*sizeof(uint8_t));
 
-      ps += pstep;
+        pt += im->step;
+        ps += pstep;
+      }
+    }
+    else
+    {
+      memcpy(pt, ps, im->height*im->step*sizeof(uint8_t));
     }
   }
 
