@@ -24,6 +24,8 @@ Parameters to be set to the ROS param server before run-time.
   * 'exclusive' Exclusive access to the sensor. This prevents other clients to
                 read GenICam parameters.
 
+* `image_prefix`: Optional prefix for storing all grabbed images.
+
 * `config_file`: Optional parameter with absolute path and name of a file that
   contains a one or more GenICam parameters or commands, separated by white
   spaces (e.g. space, return):

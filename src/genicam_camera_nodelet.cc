@@ -49,6 +49,7 @@
 #include <cctype>
 
 #include <ros/ros.h>
+#include <sensor_msgs/image_encodings.h>
 
 namespace rcgccam
 {
@@ -165,6 +166,10 @@ void GenICamCameraNodelet::onInit()
 
   image_transport::ImageTransport it(nh);
   image_pub_.init(it);
+
+  // get optional prefix for storing all grabbed images
+
+  pnh.param("image_prefix", image_prefix_, image_prefix_);
 
   // start grabbing threads
 
@@ -302,6 +307,56 @@ bool GenICamCameraNodelet::setGenICamParameter(rc_genicam_camera::SetGenICamPara
   return true;
 }
 
+namespace
+{
+
+void storeImage(const std::string &prefix, const sensor_msgs::ImagePtr &image)
+{
+  // prepare file name
+
+  std::ostringstream name;
+
+  uint64_t t_sec = image->header.stamp.sec;
+  uint64_t t_nsec = image->header.stamp.nsec;
+
+  name << prefix << "_" << t_sec << "." << std::setfill('0') << std::setw(9) << t_nsec << ".pgm";
+
+  // store 8 bit images
+
+  if (image->encoding == sensor_msgs::image_encodings::MONO8 ||
+    image->encoding == sensor_msgs::image_encodings::BAYER_BGGR8 ||
+    image->encoding == sensor_msgs::image_encodings::BAYER_GBRG8 ||
+    image->encoding == sensor_msgs::image_encodings::BAYER_GRBG8 ||
+    image->encoding == sensor_msgs::image_encodings::BAYER_RGGB8)
+  {
+    size_t width = image->width;
+    size_t height = image->height;
+    uint8_t* p = reinterpret_cast<uint8_t*>(&image->data[0]);
+
+    FILE *out = fopen(name.str().c_str(), "w");
+
+    if (out)
+    {
+      fprintf(out, "P5\n%lu %lu\n255\n", width, height);
+      size_t n = fwrite(p, 1, width*height, out);
+
+      if (n < width*height)
+      {
+        ROS_ERROR_STREAM("Cannot write to file " << name.str() <<
+                         " (" << n << " < " << width*height << ")");
+      }
+
+      fclose(out);
+    }
+    else
+    {
+      ROS_ERROR_STREAM("Cannot create file " << name.str());
+    }
+  }
+}
+
+}
+
 void GenICamCameraNodelet::syncInfo(sensor_msgs::CameraInfoPtr info)
 {
   sensor_msgs::ImagePtr image;
@@ -343,6 +398,13 @@ void GenICamCameraNodelet::syncInfo(sensor_msgs::CameraInfoPtr info)
   {
     caminfo_pub_.publish(image);
     image_pub_.publish(image);
+
+    // store images
+
+    if (image_prefix_.size() > 0)
+    {
+      storeImage(image_prefix_, image);
+    }
   }
 }
 
@@ -494,6 +556,13 @@ void GenICamCameraNodelet::grab(std::string device, rcg::Device::ACCESS access, 
                     {
                       caminfo_pub_.publish(image);
                       image_pub_.publish(image);
+
+                      // store images
+
+                      if (image_prefix_.size() > 0)
+                      {
+                        storeImage(image_prefix_, image);
+                      }
                     }
                   }
                   else
