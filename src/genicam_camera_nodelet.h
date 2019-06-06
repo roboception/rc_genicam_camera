@@ -53,8 +53,6 @@
 #include <rc_genicam_camera/GetGenICamParameter.h>
 #include <rc_genicam_camera/SetGenICamParameter.h>
 
-#include <diagnostic_updater/diagnostic_updater.h>
-
 namespace rcgccam
 {
 
