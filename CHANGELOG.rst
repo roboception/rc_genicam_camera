@@ -1,3 +1,9 @@
+1.2.1 (2019-06-06)
+------------------
+
+* Added parameter for storing all grabbed images as files
+* Minor performance optimization
+
 1.2.0 (2019-05-24)
 ------------------
 
