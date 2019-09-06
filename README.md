@@ -26,6 +26,8 @@ Parameters to be set to the ROS param server before run-time.
 
 * `image_prefix`: Optional prefix for storing all grabbed images.
 
+* `rotate`: True for rotating input images by 180 degrees.
+
 * `config_file`: Optional parameter with absolute path and name of a file that
   contains a one or more GenICam parameters or commands, separated by white
   spaces (e.g. space, return):
@@ -81,7 +83,7 @@ Parameters to be set to the ROS param server before run-time.
 
    rect.f=<f>
    ```
-   
+
    \<id\> is the number that is specified by `calib_id`. If it is 0 or 1, then
    the extrinsic relationship camera.0.R, camera.0.T and camera.1.R, camera.1.T
    is used for defining the rectification rotation matrix in CameraInfo.

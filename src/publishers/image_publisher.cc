@@ -38,11 +38,15 @@
 
 #include <sensor_msgs/image_encodings.h>
 
+#ifdef __SSSE3__
+#include <tmmintrin.h>
+#endif
+
 namespace rcgccam
 {
+
 ImagePublisher::ImagePublisher()
-{
-}
+{ }
 
 void ImagePublisher::init(image_transport::ImageTransport& it)
 {
@@ -162,13 +166,83 @@ std::string rosPixelformat(int& bytes_per_pixel, uint64_t pixelformat)
   return ret;
 }
 
-sensor_msgs::ImagePtr rosImageFromBuffer(const std::string& frame_id, const rcg::Buffer* buffer, uint32_t part)
+namespace
+{
+
+/*
+  Copies nmemb elements in inverse order. Each element consists of m bytes. The
+  byte order within each element is not inversed.
+*/
+
+void copyInverse(uint8_t *tp, const uint8_t *sp, size_t nmemb, size_t m)
+{
+  if (m == 1)
+  {
+    // optimization of special case of inversing bytewise
+
+    tp += nmemb;
+    size_t i=0;
+
+#if defined (__SSSE3__)
+    __m128i inv_index=_mm_set_epi8(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
+
+    while (i+16 <= nmemb)
+    {
+      tp-=16;
+
+      __m128i v=_mm_loadu_si128(reinterpret_cast<const __m128i *>(sp));
+      v=_mm_shuffle_epi8(v, inv_index);
+      _mm_storeu_si128(reinterpret_cast<__m128i *>(tp), v);
+
+      sp+=16;
+      i+=16;
+    }
+#endif
+
+    while (i < nmemb)
+    {
+      tp--;
+      *tp = *sp++;
+      i++;
+    }
+  }
+  else
+  {
+    // general case, i.e. m > 1
+
+    tp += m*nmemb;
+
+    for (size_t i=0; i<nmemb; i++)
+    {
+      tp -= m;
+
+      for (size_t k=0; k<m; k++)
+      {
+        tp[k] = *sp++;
+      }
+    }
+  }
+}
+
+}
+
+sensor_msgs::ImagePtr rosImageFromBuffer(const std::string& frame_id, const rcg::Buffer* buffer,
+  uint32_t part, bool rotate)
 {
   sensor_msgs::ImagePtr im;
   std::string pixelformat;
   int bytes_per_pixel;
 
   pixelformat = rosPixelformat(bytes_per_pixel, buffer->getPixelFormat(part));
+
+  // rotation is not supported for all pixel formats
+
+  if (rotate && pixelformat == sensor_msgs::image_encodings::YUV422)
+  {
+    rotate=false;
+
+    ROS_WARN_STREAM("Rotation is not supporte for image format: " << pixelformat);
+  }
 
   if (pixelformat.size() > 0)
   {
@@ -205,17 +279,39 @@ sensor_msgs::ImagePtr rosImageFromBuffer(const std::string& frame_id, const rcg:
 
     if (im->step != pstep)
     {
-      for (uint32_t k = 0; k < im->height; k++)
+      if (rotate)
       {
-        memcpy(pt, ps, im->step*sizeof(uint8_t));
+        pt += im->step*im->height;
+        for (uint32_t k = 0; k < im->height; k++)
+        {
+          pt -= im->step;
 
-        pt += im->step;
-        ps += pstep;
+          copyInverse(pt, ps, im->width, bytes_per_pixel);
+
+          ps += pstep;
+        }
+      }
+      else
+      {
+        for (uint32_t k = 0; k < im->height; k++)
+        {
+          memcpy(pt, ps, im->step*sizeof(uint8_t));
+
+          pt += im->step;
+          ps += pstep;
+        }
       }
     }
     else
     {
-      memcpy(pt, ps, im->height*im->step*sizeof(uint8_t));
+      if (rotate)
+      {
+        copyInverse(pt, ps, im->height*im->width, bytes_per_pixel);
+      }
+      else
+      {
+        memcpy(pt, ps, im->height*im->step*sizeof(uint8_t));
+      }
     }
   }
 

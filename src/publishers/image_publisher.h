@@ -76,7 +76,8 @@ std::string rosPixelformat(int& bytes_per_pixel, uint64_t pixelformat);
 /**
   Converts a (supported) image in a GenICam buffer into a ROS image.
 */
-sensor_msgs::ImagePtr rosImageFromBuffer(const std::string& frame_id, const rcg::Buffer* buffer, uint32_t part);
+sensor_msgs::ImagePtr rosImageFromBuffer(const std::string& frame_id, const rcg::Buffer* buffer,
+  uint32_t part, bool rotate);
 
 }  // namespace rcgccam
 

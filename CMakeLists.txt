@@ -21,6 +21,22 @@ endif ()
 add_definitions(-Wall)
 add_definitions(-Wno-unknown-pragmas)
 
+# checking for intel architecture and activating SSSE3 for optimization of
+# rotating images
+
+EXECUTE_PROCESS(COMMAND ${CMAKE_CXX_COMPILER} -dumpmachine COMMAND tr -d '\n' OUTPUT_VARIABLE CXX_MACHINE)
+string(REGEX REPLACE "([a-zA-Z_0-9]+).*" "\\1" ARCHITECTURE ${CXX_MACHINE})
+
+if ("${ARCHITECTURE}" STREQUAL "x86_64")
+  set(USE_SSSE3 1 CACHE BOOL "Compile for SSEE3 (x86) using -mssse3")
+else ()
+  set(USE_SSSE3 0 CACHE BOOL "Compile for SSEE3 (x86) using -mssse3")
+endif ()
+
+if (USE_SSSE3)
+  add_definitions(-mssse3)
+endif ()
+
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages

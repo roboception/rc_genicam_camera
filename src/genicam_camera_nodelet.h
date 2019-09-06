@@ -99,6 +99,7 @@ private:
   CameraInfoPublisher caminfo_pub_;
   ImagePublisher image_pub_;
   std::string image_prefix_;
+  bool rotate_;
 
   std::thread grab_thread_;
   std::atomic_bool running_;

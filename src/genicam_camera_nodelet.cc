@@ -59,6 +59,7 @@ GenICamCameraNodelet::GenICamCameraNodelet()
 {
   timestamp_tolerance_ = 0;
   sync_tolerance_ = 0;
+  rotate_ = false;
   running_ = false;
 }
 
@@ -170,6 +171,10 @@ void GenICamCameraNodelet::onInit()
   // get optional prefix for storing all grabbed images
 
   pnh.param("image_prefix", image_prefix_, image_prefix_);
+
+  // rotating images by 180 degrees?
+
+  pnh.param("rotate", rotate_, rotate_);
 
   // start grabbing threads
 
@@ -499,7 +504,7 @@ void GenICamCameraNodelet::grab(std::string device, rcg::Device::ACCESS access, 
                 {
                   // convert image to ROS
 
-                  sensor_msgs::ImagePtr image = rosImageFromBuffer(frame_id_, buffer, part);
+                  sensor_msgs::ImagePtr image = rosImageFromBuffer(frame_id_, buffer, part, rotate_);
 
                   if (image)
                   {
