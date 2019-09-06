@@ -1,3 +1,8 @@
+1.2.2 (2019-09-06)
+------------------
+
+* Added parameter to rotate grabbed images by 180 degrees
+
 1.2.1 (2019-06-06)
 ------------------
 
