@@ -29,7 +29,7 @@ Parameters to be set to the ROS param server before run-time.
 * `rotate`: True for rotating input images by 180 degrees.
 
 * `config_file`: Optional parameter with absolute path and name of a file that
-  contains a one or more GenICam parameters or commands, separated by white
+  contains one or more GenICam parameters or commands, separated by white
   spaces (e.g. space, return):
 
   ```

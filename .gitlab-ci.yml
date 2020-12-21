@@ -13,20 +13,20 @@ variables:
 #########################
 # Templates using anchors
 #########################
-.armhf_trusty_t: &armhf_trusty_job
-  image: registry.roboception.de/tools/docker_images:armhf-indigo-perception
-  tags:
-    - armhf
-    - docker
-
-.amd64_xenial_t: &amd64_xenial_job
-  image: ros:kinetic-perception
+.amd64_bionic_t: &amd64_bionic_job
+  image: ros:melodic-perception
   tags:
     - amd64
     - docker
 
-.amd64_bionic_t: &amd64_bionic_job
-  image: ros:melodic-perception
+.armhf_bionic_t: &armhf_bionic_job
+  image: registry.roboception.de/tools/docker_images:armhf-melodic-perception
+  tags:
+    - armhf
+    - docker
+
+.amd64_focal_t: &amd64_focal_job
+  image: ros:noetic-perception
   tags:
     - amd64
     - docker
@@ -39,7 +39,7 @@ variables:
   script:
     - mkdir build && cd build
     - cmake ..
-    - make
+    - make -j 4
     - CTEST_OUTPUT_ON_FAILURE=1 make test
 
 # run test script with latest debs from testing installed
@@ -69,7 +69,7 @@ variables:
   script:
     - mkdir build && cd build
     - cmake -DCATKIN_BUILD_BINARY_PACKAGE="1" -DCMAKE_INSTALL_PREFIX="/opt/ros/$ROS_DISTRO" -DCMAKE_PREFIX_PATH="/opt/ros/$ROS_DISTRO" -DCMAKE_BUILD_TYPE=Release ..
-    - make
+    - make -j 4
     - make package
     - if [ -z "$APT_REPO" ]; then export APT_REPO=testing; fi
     - upload_deb.sh $DISTRO_CODENAME-$APT_REPO *.deb
@@ -117,44 +117,44 @@ gen_dox:
 
 # Test against latest (on every commit)
 #######################################
-test:trusty:armhf:
-  <<: *armhf_trusty_job
-  extends: .test_latest
-
-test:xenial:amd64:
-  <<: *amd64_xenial_job
-  extends: .test_latest
-
 test:bionic:amd64:
   <<: *amd64_bionic_job
   extends: .test_latest
 
+test:bionic:armhf:
+  <<: *armhf_bionic_job
+  extends: .test_latest
+
+test:focal:amd64:
+  <<: *amd64_focal_job
+  extends: .test_latest
+
 # Test against stable (is allowed to fail)
 ##########################################
-test_stable:trusty:armhf:
-  <<: *armhf_trusty_job
-  extends: .test_stable
-
-test_stable:xenial:amd64:
-  <<: *amd64_xenial_job
-  extends: .test_stable
-
 test_stable:bionic:amd64:
   <<: *amd64_bionic_job
   extends: .test_stable
 
+test_stable:bionic:armhf:
+  <<: *armhf_bionic_job
+  extends: .test_stable
+
+test_stable:focal:amd64:
+  <<: *amd64_focal_job
+  extends: .test_stable
+
 # Deploy testing (only on master)
 #################################
-package_testing:trusty:armhf:
-  <<: *armhf_trusty_job
-  extends: .package_testing
-
-package_testing:xenial:amd64:
-  <<: *amd64_xenial_job
-  extends: .package_testing
-
 package_testing:bionic:amd64:
   <<: *amd64_bionic_job
+  extends: .package_testing
+
+package_testing:bionic:armhf:
+  <<: *armhf_bionic_job
+  extends: .package_testing
+
+package_testing:focal:amd64:
+  <<: *amd64_focal_job
   extends: .package_testing
 
 ################
@@ -163,28 +163,28 @@ package_testing:bionic:amd64:
 
 # Test against stable if it is a release
 ########################################
-test_release:trusty:armhf:
-  <<: *armhf_trusty_job
-  extends: .test_release
-
-test_release:xenial:amd64:
-  <<: *amd64_xenial_job
-  extends: .test_release
-
 test_release:bionic:amd64:
   <<: *amd64_bionic_job
   extends: .test_release
 
+test_release:bionic:armhf:
+  <<: *armhf_bionic_job
+  extends: .test_release
+
+test_release:focal:amd64:
+  <<: *amd64_focal_job
+  extends: .test_release
+
 # Deploy stable (only for releases, version tags)
 #################################################
-package_stable:trusty:armhf:
-  <<: *armhf_trusty_job
-  extends: .package_stable
-
-package_stable:xenial:amd64:
-  <<: *amd64_xenial_job
-  extends: .package_stable
-
 package_stable:bionic:amd64:
   <<: *amd64_bionic_job
+  extends: .package_stable
+
+package_stable:bionic:armhf:
+  <<: *armhf_bionic_job
+  extends: .package_stable
+
+package_stable:focal:amd64:
+  <<: *amd64_focal_job
   extends: .package_stable
