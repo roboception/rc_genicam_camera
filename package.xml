@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>rc_genicam_camera</name>
-  <version>1.2.2</version>
+  <version>1.2.3</version>
   <description>
     The rc_genicam_camera provides images from a GenICam compatible camera.
   </description>

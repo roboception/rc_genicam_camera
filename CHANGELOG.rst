@@ -1,3 +1,9 @@
+1.2.3 (2020-12-21)
+------------------
+
+* Updated cmake and CI files
+* Dropped building for trusty and added building for focal on CI
+
 1.2.2 (2019-09-06)
 ------------------
 
