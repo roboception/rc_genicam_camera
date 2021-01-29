@@ -9,12 +9,14 @@ set(SRC
 
 # build and install the nodelet
 
-link_directories(${RC_GENICAM_API_LIBRARY_DIRS})
-
 add_library(rc_genicam_camera_nodelet ${SRC})
 
-target_link_libraries(rc_genicam_camera_nodelet ${catkin_LIBRARIES})
-target_link_libraries(rc_genicam_camera_nodelet ${RC_GENICAM_API_LIBRARIES})
+target_link_libraries(rc_genicam_camera_nodelet
+  PUBLIC
+    ${catkin_LIBRARIES}
+  PRIVATE
+    rc_genicam_api::rc_genicam_api
+)
 
 add_executable(rc_genicam_camera genicam_camera_node.cc)
 target_link_libraries(rc_genicam_camera ${catkin_LIBRARIES})

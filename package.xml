@@ -6,6 +6,7 @@
     The rc_genicam_camera provides images from a GenICam compatible camera.
   </description>
 
+  <maintainer email="felix.ruess@roboception.de">Felix Ruess</maintainer>
   <maintainer email="heiko.hirschmueller@roboception.de">Heiko Hirschmueller</maintainer>
   <license>BSD</license>
 
