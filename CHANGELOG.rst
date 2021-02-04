@@ -1,3 +1,8 @@
+1.3.0 (2021-02-04)
+------------------
+
+* Make frame_id configurable and improved default.
+
 1.2.4 (2021-01-29)
 ------------------
 
