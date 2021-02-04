@@ -93,8 +93,34 @@ void GenICamCameraNodelet::onInit()
   std::string calib = "";
   int calib_id=-1;
 
-  std::string ns = ros::this_node::getNamespace();
-  frame_id_ = ns + "camera";
+  pnh.param("frame_id", frame_id_, frame_id_);
+
+  if (frame_id_.size() == 0)
+  {
+    std::string ns = ros::this_node::getNamespace();
+
+    if (ns.size() > 0 && ns[0] == '/')
+    {
+      ns = ns.substr(1);
+    }
+
+    if (ns.size() > 0)
+    {
+      frame_id_ = ns + "_camera";
+    }
+    else
+    {
+      frame_id_ = "camera";
+    }
+
+    int cid=-1;
+    pnh.param("calib_id", cid, cid);
+
+    if (cid >= 0)
+    {
+      frame_id_ = frame_id_ + std::to_string(cid);
+    }
+  }
 
   pnh.param("device", device, device);
   pnh.param("gev_access", access, access);

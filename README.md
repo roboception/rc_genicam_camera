@@ -24,6 +24,9 @@ Parameters to be set to the ROS param server before run-time.
   * 'exclusive' Exclusive access to the sensor. This prevents other clients to
                 read GenICam parameters.
 
+* `frame_id`: Frame ID that will be used for header of all published messages.
+              The default is [<namespace>_]camera[<calib_id>].
+
 * `image_prefix`: Optional prefix for storing all grabbed images.
 
 * `rotate`: True for rotating input images by 180 degrees.
