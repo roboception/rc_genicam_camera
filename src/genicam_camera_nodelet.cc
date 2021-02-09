@@ -101,6 +101,7 @@ void GenICamCameraNodelet::onInit()
   pnh.param("config_file", config, config);
   pnh.param("calib_file", calib, calib);
   pnh.param("calib_id", calib_id, calib_id);
+  pnh.param("frame_id", frame_id_, frame_id_);
 
   if (device.size() == 0)
   {
