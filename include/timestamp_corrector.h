@@ -34,7 +34,7 @@
 #ifndef RC_GENICAM_CAMERA_TIMESTAMP_CORRECTOR_H
 #define RC_GENICAM_CAMERA_TIMESTAMP_CORRECTOR_H
 
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 
 #include <rc_genicam_api/config.h>
 
@@ -90,7 +90,7 @@ public:
                 determineOffset() has never been called or if it delivered an
                 error on the last call.
   */
-  int64_t correct(ros::Time& time);
+  int64_t correct(rclcpp::Time& time);
 
 private:
   int64_t tolerance_;
