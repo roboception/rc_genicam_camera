@@ -54,11 +54,11 @@ void CameraInfoList::setTolerance(uint64_t tolerance)
   tolerance_ = tolerance;
 }
 
-sensor_msgs::CameraInfoPtr CameraInfoList::add(const sensor_msgs::CameraInfoPtr& image)
+sensor_msgs::msg::CameraInfo CameraInfoList::add(const sensor_msgs::msg::CameraInfo& image)
 {
   list_.push_back(image);
 
-  sensor_msgs::CameraInfoPtr ret;
+  sensor_msgs::msg::CameraInfo ret;
 
   if (list_.size() > maxsize_)
   {
@@ -69,14 +69,14 @@ sensor_msgs::CameraInfoPtr CameraInfoList::add(const sensor_msgs::CameraInfoPtr&
   return ret;
 }
 
-int CameraInfoList::removeOld(const ros::Time& timestamp)
+int CameraInfoList::removeOld(const rclcpp::Time& timestamp)
 {
   size_t i = 0;
   int n = 0;
 
   while (i < list_.size())
   {
-    if (list_[i]->header.stamp <= timestamp)
+    if (rclcpp::Time(list_[i].header.stamp) <= timestamp)
     {
       list_.erase(list_.begin() + static_cast<int>(i));
       n++;
@@ -90,12 +90,12 @@ int CameraInfoList::removeOld(const ros::Time& timestamp)
   return n;
 }
 
-sensor_msgs::CameraInfoPtr CameraInfoList::find(const ros::Time& timestamp) const
+sensor_msgs::msg::CameraInfo CameraInfoList::find(const rclcpp::Time& timestamp) const
 {
   for (size_t i = 0; i < list_.size(); i++)
   {
-    uint64_t ts = timestamp.toNSec();
-    uint64_t info_ts = list_[i]->header.stamp.toNSec();
+    uint64_t ts = timestamp.nanoseconds();
+    uint64_t info_ts = list_[i].header.stamp.nanosec;
 
     if (info_ts >= ts - tolerance_ && info_ts <= ts + tolerance_)
     {
@@ -103,7 +103,7 @@ sensor_msgs::CameraInfoPtr CameraInfoList::find(const ros::Time& timestamp) cons
     }
   }
 
-  return sensor_msgs::CameraInfoPtr();
+  return sensor_msgs::msg::CameraInfo();
 }
 
 }  // namespace rcgccam

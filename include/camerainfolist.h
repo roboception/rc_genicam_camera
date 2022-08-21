@@ -36,8 +36,9 @@
 #ifndef RC_GENICAM_CAMERA_CAMERAINFOLIST
 #define RC_GENICAM_CAMERA_CAMERAINFOLIST
 
-#include <ros/ros.h>
-#include <sensor_msgs/CameraInfo.h>
+#include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/image.hpp>
+#include <sensor_msgs/msg/camera_info.hpp>
 
 namespace rcgccam
 {
@@ -72,7 +73,7 @@ public:
     @return     Dropped camera info message, null pointer if nothing is
                 dropped.
   */
-  sensor_msgs::CameraInfoPtr add(const sensor_msgs::CameraInfoPtr& info);
+  sensor_msgs::msg::CameraInfo add(const sensor_msgs::msg::CameraInfo& info);
 
   /**
     Remove all camera infos that have a timestamp that is older or equal than
@@ -81,7 +82,7 @@ public:
     @param timestamp Timestamp.
     @return          Number of removed camera infos.
   */
-  int removeOld(const ros::Time& timestamp);
+  int removeOld(const rclcpp::Time& timestamp);
 
   /**
     Returns the oldest camera info that has a timestamp within the tolerance
@@ -92,12 +93,12 @@ public:
     @param tolerance Maximum tolarance added or subtracted to the timestamp.
     @return          Pointer to camera info or 0.
   */
-  sensor_msgs::CameraInfoPtr find(const ros::Time& timestamp) const;
+  sensor_msgs::msg::CameraInfo find(const rclcpp::Time& timestamp) const;
 
 private:
   size_t maxsize_;
   uint64_t tolerance_;
-  std::vector<sensor_msgs::CameraInfoPtr> list_;
+  std::vector<sensor_msgs::msg::CameraInfo> list_;
 };
 
 }  // namespace rcgccam
