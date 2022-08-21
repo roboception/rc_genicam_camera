@@ -54,11 +54,11 @@ void ImageList::setTolerance(uint64_t tolerance)
   tolerance_ = tolerance;
 }
 
-sensor_msgs::ImagePtr ImageList::add(const sensor_msgs::ImagePtr& image)
+sensor_msgs::msg::Image::ConstSharedPtr ImageList::add(sensor_msgs::msg::Image::ConstSharedPtr image)
 {
   list_.push_back(image);
 
-  sensor_msgs::ImagePtr ret;
+  sensor_msgs::msg::Image::ConstSharedPtr ret;
 
   if (list_.size() > maxsize_)
   {
@@ -69,14 +69,14 @@ sensor_msgs::ImagePtr ImageList::add(const sensor_msgs::ImagePtr& image)
   return ret;
 }
 
-int ImageList::removeOld(const ros::Time& timestamp)
+int ImageList::removeOld(const rclcpp::Time& timestamp)
 {
   size_t i = 0;
   int n = 0;
 
   while (i < list_.size())
   {
-    if (list_[i]->header.stamp <= timestamp)
+    if (rclcpp::Time(list_[i]->header.stamp) <= timestamp)
     {
       list_.erase(list_.begin() + static_cast<int>(i));
       n++;
@@ -90,12 +90,12 @@ int ImageList::removeOld(const ros::Time& timestamp)
   return n;
 }
 
-sensor_msgs::ImagePtr ImageList::find(const ros::Time& timestamp) const
+sensor_msgs::msg::Image::ConstSharedPtr ImageList::find(const rclcpp::Time& timestamp) const
 {
   for (size_t i = 0; i < list_.size(); i++)
   {
-    uint64_t ts = timestamp.toNSec();
-    uint64_t image_ts = list_[i]->header.stamp.toNSec();
+    uint64_t ts = timestamp.nanoseconds();
+    uint64_t image_ts = list_[i]->header.stamp.nanosec;
 
     if (image_ts >= ts - tolerance_ && image_ts <= ts + tolerance_)
     {
@@ -103,7 +103,7 @@ sensor_msgs::ImagePtr ImageList::find(const ros::Time& timestamp) const
     }
   }
 
-  return sensor_msgs::ImagePtr();
+  return sensor_msgs::msg::Image::ConstSharedPtr();
 }
 
 }  // namespace rcgccam

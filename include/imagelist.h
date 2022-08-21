@@ -36,8 +36,8 @@
 #ifndef RC_GENICAM_CAMERA_IMAGELIST
 #define RC_GENICAM_CAMERA_IMAGELIST
 
-#include <ros/ros.h>
-#include <sensor_msgs/Image.h>
+#include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/image.hpp>
 
 namespace rcgccam
 {
@@ -71,7 +71,7 @@ public:
     @param image Image to be added.
     @return      Dropped image, null pointer if no image is dropped.
   */
-  sensor_msgs::ImagePtr add(const sensor_msgs::ImagePtr& image);
+  sensor_msgs::msg::Image::ConstSharedPtr add(sensor_msgs::msg::Image::ConstSharedPtr image);
 
   /**
     Remove all images that have a timestamp that is older or equal than the
@@ -80,7 +80,7 @@ public:
     @param timestamp Timestamp.
     @return          Number of removed images.
   */
-  int removeOld(const ros::Time& timestamp);
+  int removeOld(const rclcpp::Time& timestamp);
 
   /**
     Returns the oldest image that has a timestamp within the tolerance of the
@@ -91,12 +91,12 @@ public:
     @param tolerance Maximum tolarance added or subtracted to the timestamp.
     @return Pointer to image or 0.
   */
-  sensor_msgs::ImagePtr find(const ros::Time& timestamp) const;
+  sensor_msgs::msg::Image::ConstSharedPtr find(const rclcpp::Time& timestamp) const;
 
 private:
   size_t maxsize_;
   uint64_t tolerance_;
-  std::vector<sensor_msgs::ImagePtr> list_;
+  std::vector<sensor_msgs::msg::Image::ConstSharedPtr> list_;
 };
 
 }  // namespace rcgccam
