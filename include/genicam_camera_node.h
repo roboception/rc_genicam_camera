@@ -80,7 +80,7 @@ private:
   double timestamp_tolerance_;
   double sync_tolerance_;
 
-  rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_sync_info_ptr_;
+  rclcpp::Subscription<sensor_msgs::msg::CameraInfo>::SharedPtr sub_sync_info_ptr_;
 
   rclcpp::Service<rc_genicam_camera::srv::GetGenICamParameter>::SharedPtr get_param_service_ptr_;
   rclcpp::Service<rc_genicam_camera::srv::SetGenICamParameter>::SharedPtr set_param_service_ptr_;

@@ -70,10 +70,10 @@ explicit GenICamCameraNode::GenICamCameraNode(const std::string& node_name)
   this->declare_parameter("config_file");
   this->declare_parameter("calib_file");
   this->declare_parameter("calib_id");
-  this->declare_parameter("host_timestamp");
-  this->declare_parameter("timestamp_tolerance_");
+  this->declare_parameter("host_timestamp", false);
+  this->declare_parameter("timestamp_tolerance_", 0.01);
   this->declare_parameter("sync_info");
-  this->declare_parameter("sync_tolerance");
+  this->declare_parameter("sync_tolerance", 0.019);
   this->declare_parameter("image_prefix");
   this->declare_parameter("rotate");
 }
@@ -163,9 +163,8 @@ void GenICamCameraNode::onInit()
 
   // optional parameters for timestamp correction
 
-  bool host_timestamp = false;
-  pnh.param("host_timestamp", host_timestamp, host_timestamp);
-  pnh.param("timestamp_tolerance_", timestamp_tolerance_, 0.01);
+  auto host_timestamp = this->get_parameter("host_timestamp").as_bool();
+  timestamp_tolerance_ = this->get_parameter("timestamp_tolerance_").as_double();
 
   if (!host_timestamp)
   {
@@ -174,13 +173,16 @@ void GenICamCameraNode::onInit()
 
   // optional parameters for timestamp synchronization
 
-  std::string sync_info;
-  pnh.param("sync_info", sync_info, sync_info);
-  pnh.param("sync_tolerance", sync_tolerance_, 0.019);
+  auto sync_info = this->get_parameter("sync_info").as_string();
+  sync_tolerance_ = this->get_parameter("sync_tolerance").as_double();
 
   if (sync_info.size() > 0)
   {
-    sub_sync_info_ = nh.subscribe(sync_info, 10, &GenICamCameraNode::syncInfo, this);
+    sub_sync_info_ptr_ = this->create_subscription<sensor_msgs::msg::CameraInfo>(
+      sync_info,
+      rclcpp::SensorDataQoS(),
+      std::bind(&GenICamCameraNode::syncInfo, this, std::placeholders::_1)
+    );
 
     image_list_.setSize(25);
     image_list_.setTolerance(static_cast<uint64_t>(sync_tolerance_ * 1000000000.0));
@@ -400,7 +402,7 @@ void storeImage(const std::string &prefix, const sensor_msgs::ImagePtr &image)
 
 }
 
-void GenICamCameraNode::syncInfo(sensor_msgs::CameraInfoPtr info)
+void GenICamCameraNode::syncInfo(sensor_msgs::msg::CameraInfo::ConstSharedPtr info)
 {
   sensor_msgs::ImagePtr image;
 
