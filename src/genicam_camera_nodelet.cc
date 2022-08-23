@@ -196,10 +196,15 @@ void GenICamCameraNode::onInit()
   }
 
   // setup service for getting and setting parameters
+  get_param_service_ptr_ = this->create_service<rc_genicam_camera::srv::GetGenICamParameter>(
+    "get_genicam_parameter",
+    std::bind(&GenICamCameraNode::getGenICamParameter, this, std::placeholders::_1)
+  );
 
-  get_param_service_ = pnh.advertiseService("get_genicam_parameter", &GenICamCameraNode::getGenICamParameter, this);
-
-  set_param_service_ = pnh.advertiseService("set_genicam_parameter", &GenICamCameraNode::setGenICamParameter, this);
+  set_param_service_ptr_ = this->create_service<rc_genicam_camera::srv::SetGenICamParameter>(
+    "set_genicam_parameter",
+    std::bind(&GenICamCameraNode::setGenICamParameter, this, std::placeholders::_1)
+  );
 
   // initialize publishers
 
