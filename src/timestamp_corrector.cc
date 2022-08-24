@@ -132,11 +132,11 @@ bool TimestampCorrector::determineOffset(const std::shared_ptr<GenApi::CNodeMapR
   return false;
 }
 
-int64_t TimestampCorrector::correct(rclcpp::Time& time)
+int64_t TimestampCorrector::correct(builtin_interfaces::msg::Time& time)
 {
   if (tolerance_ >= 0 && accuracy_ >= 0)
   {
-    int64_t t = static_cast<int64_t>(time.nanoseconds());
+    int64_t t = static_cast<int64_t>(time.nanosec);
     time = rclcpp::Time(static_cast<uint64_t>(t + offset_));
 
     return accuracy_;
