@@ -341,7 +341,7 @@ CameraInfoPublisher::CameraInfoPublisher()
 {
 }
 
-void CameraInfoPublisher::init(std::shared_ptr<rclcpp::Node> node, const char* calib_file, int id)
+void CameraInfoPublisher::init(rclcpp::Node::SharedPtr node, const char* calib_file, int id)
 {
   // advertise topic
 

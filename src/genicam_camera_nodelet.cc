@@ -207,22 +207,18 @@ void GenICamCameraNode::onInit()
   );
 
   // initialize publishers
-
-  caminfo_pub_.init(nh, calib.c_str(), calib_id);
-
-  image_transport::ImageTransport it(nh);
+  caminfo_pub_.init(this->shared_from_this(), calib.c_str(), calib_id);
+  
+  image_transport::ImageTransport it(this->shared_from_this());
   image_pub_.init(it);
 
   // get optional prefix for storing all grabbed images
-
-  pnh.param("image_prefix", image_prefix_, image_prefix_);
+  image_prefix_ = this->get_parameter("image_prefix").as_string();
 
   // rotating images by 180 degrees?
-
-  pnh.param("rotate", rotate_, rotate_);
+  rotate_ = this->get_parameter("rotate").as_bool();
 
   // start grabbing threads
-
   running_ = true;
   grab_thread_ = std::thread(&GenICamCameraNode::grab, this, device, access_id, config);
 }

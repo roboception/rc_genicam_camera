@@ -57,7 +57,7 @@ public:
     @param id              Camera ID, i.e. < 0 for no ID, 0 for left and 1 for
                            right camera.
   */
-  void init(std::shared_ptr<rclcpp::Node> node, const char* calib_file, int id);
+  void init(rclcpp::Node::SharedPtr node, const char* calib_file, int id);
 
   bool used();
 
