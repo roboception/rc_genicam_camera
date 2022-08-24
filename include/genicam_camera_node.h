@@ -71,7 +71,7 @@ public:
   bool setGenICamParameter(rc_genicam_camera::srv::SetGenICamParameter::Request& req,
                            rc_genicam_camera::srv::SetGenICamParameter::Response& resp);
 
-  void syncInfo(sensor_msgs::msg::CameraInfo::ConstSharedPtr info);
+  void syncInfo(sensor_msgs::msg::CameraInfo::SharedPtr info);
 
 private:
 

@@ -47,6 +47,9 @@
 #include <sstream>
 #include <stdexcept>
 #include <cctype>
+#include <iomanip>
+#include <chrono>
+#include <thread>
 
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/image_encodings.hpp>
@@ -241,7 +244,8 @@ std::string loadConfig(const std::string& filename)
     }
     else
     {
-      RCLCPP_ERROR_STREAM(this->get_logger(), "rc_genicam_camera: Cannot load config: " << filename);
+      RCLCPP_ERROR_STREAM(rclcpp::get_logger("rc_genicam_camera::loadConfig"),
+        "rc_genicam_camera: Cannot load config: " << filename);
     }
   }
 
@@ -302,8 +306,8 @@ void applyParameters(const std::shared_ptr<GenApi::CNodeMapRef>& nodemap, const 
 
 }  // namespace
 
-bool GenICamCameraNode::getGenICamParameter(rc_genicam_camera::GetGenICamParameter::Request& req,
-                                               rc_genicam_camera::GetGenICamParameter::Response& resp)
+bool GenICamCameraNode::getGenICamParameter(rc_genicam_camera::srv::GetGenICamParameter::Request& req,
+                                            rc_genicam_camera::srv::GetGenICamParameter::Response& resp)
 {
   std::lock_guard<std::mutex> lock(device_mtx_);
 
@@ -327,8 +331,8 @@ bool GenICamCameraNode::getGenICamParameter(rc_genicam_camera::GetGenICamParamet
   return true;
 }
 
-bool GenICamCameraNode::setGenICamParameter(rc_genicam_camera::SetGenICamParameter::Request& req,
-                                               rc_genicam_camera::SetGenICamParameter::Response& resp)
+bool GenICamCameraNode::setGenICamParameter(rc_genicam_camera::srv::SetGenICamParameter::Request& req,
+                                            rc_genicam_camera::srv::SetGenICamParameter::Response& resp)
 {
   std::lock_guard<std::mutex> lock(device_mtx_);
 
@@ -356,14 +360,14 @@ bool GenICamCameraNode::setGenICamParameter(rc_genicam_camera::SetGenICamParamet
 namespace
 {
 
-void storeImage(const std::string &prefix, const sensor_msgs::ImagePtr &image)
+void storeImage(const std::string &prefix, const sensor_msgs::msg::Image::SharedPtr image)
 {
   // prepare file name
 
   std::ostringstream name;
 
   uint64_t t_sec = image->header.stamp.sec;
-  uint64_t t_nsec = image->header.stamp.nsec;
+  uint64_t t_nsec = image->header.stamp.nanosec;
 
   name << prefix << "_" << t_sec << "." << std::setfill('0') << std::setw(9) << t_nsec << ".pgm";
 
@@ -388,24 +392,26 @@ void storeImage(const std::string &prefix, const sensor_msgs::ImagePtr &image)
 
       if (n < width*height)
       {
-        RCLCPP_ERROR_STREAM(this->get_logger(), "Cannot write to file " << name.str() <<
-                         " (" << n << " < " << width*height << ")");
+        RCLCPP_ERROR_STREAM(rclcpp::get_logger("rc_genicam_camera::storeImage"),
+        "Cannot write to file " << name.str() << " ("
+          << n << " < " << width*height << ")");
       }
 
       fclose(out);
     }
     else
     {
-      RCLCPP_ERROR_STREAM(this->get_logger(), "Cannot create file " << name.str());
+      RCLCPP_ERROR_STREAM(rclcpp::get_logger("rc_genicam_camera::storeImage"),
+      "Cannot create file " << name.str());
     }
   }
 }
 
 }
 
-void GenICamCameraNode::syncInfo(sensor_msgs::msg::CameraInfo::ConstSharedPtr info)
+void GenICamCameraNode::syncInfo(sensor_msgs::msg::CameraInfo::SharedPtr info)
 {
-  sensor_msgs::ImagePtr image;
+  sensor_msgs::msg::Image::SharedPtr image;
 
   {
     std::lock_guard<std::mutex> lock(sync_mtx_);
@@ -526,7 +532,7 @@ void GenICamCameraNode::grab(std::string device, rcg::Device::ACCESS access, std
         stream[0]->open();
         stream[0]->startStreaming();
 
-        ROS_INFO_STREAM("rc_genicam_camera: Start streaming");
+        RCLCPP_INFO_STREAM(this->get_logger(), "rc_genicam_camera: Start streaming");
 
         // grabbing thread
 
@@ -545,12 +551,11 @@ void GenICamCameraNode::grab(std::string device, rcg::Device::ACCESS access, std
                 {
                   // convert image to ROS
 
-                  sensor_msgs::ImagePtr image = rosImageFromBuffer(frame_id_, buffer, part, rotate_);
+                  sensor_msgs::msg::Image::SharedPtr image = rosImageFromBuffer(frame_id_, buffer, part, rotate_);
 
                   if (image)
                   {
                     // correct timestamp
-
                     ts_host.correct(image->header.stamp);
 
                     // optionally take timestamp of approximately synchronized
@@ -562,7 +567,7 @@ void GenICamCameraNode::grab(std::string device, rcg::Device::ACCESS access, std
 
                       // find camera info that corresponds to the image
 
-                      sensor_msgs::CameraInfoPtr info = info_list_.find(image->header.stamp);
+                      sensor_msgs::msg::CameraInfo::SharedPtr info = info_list_.find(image->header.stamp);
 
                       if (info != 0)
                       {
@@ -589,7 +594,7 @@ void GenICamCameraNode::grab(std::string device, rcg::Device::ACCESS access, std
 
                         if (image)
                         {
-                          RCLCPP_WARN_THROTTLE(this->get_logger(), 10, "rc_genicam_camera: Input queue full, dropping image");
+                          RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 5000, "rc_genicam_camera: Input queue full, dropping image");
                         }
 
                         image.reset();
@@ -642,7 +647,7 @@ void GenICamCameraNode::grab(std::string device, rcg::Device::ACCESS access, std
       catch (const std::exception& ex)
       {
         RCLCPP_ERROR_STREAM(this->get_logger(), "rc_genicam_camera: " << ex.what());
-        sleep(1);
+        std::this_thread::sleep_for(std::chrono::seconds(1));
       }
 
       // close device
@@ -668,9 +673,9 @@ void GenICamCameraNode::grab(std::string device, rcg::Device::ACCESS access, std
   }
 
   running_ = false;
-  RCLCPP_INFO(this->get_logger(), ("rc_genicam_camera: Grabbing thread stopped");
+  RCLCPP_INFO(this->get_logger(), "rc_genicam_camera: Grabbing thread stopped");
 }
 
 }  // namespace rcgccam
 
-PLUGINLIB_EXPORT_CLASS(rcgccam::GenICamCameraNode, nodelet::Nodelet)
+PLUGINLIB_EXPORT_CLASS(rcgccam::GenICamCameraNode, rclcpp::Node)
