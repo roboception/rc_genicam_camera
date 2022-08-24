@@ -36,7 +36,7 @@
 #include <rc_genicam_api/image.h>
 #include <rc_genicam_api/pixel_formats.h>
 
-#include <sensor_msgs/image_encodings.h>
+#include <sensor_msgs/image_encodings.hpp>
 
 #ifdef __SSSE3__
 #include <tmmintrin.h>
@@ -58,7 +58,7 @@ bool ImagePublisher::used()
   return pub_.getNumSubscribers() > 0;
 }
 
-void ImagePublisher::publish(const sensor_msgs::ImagePtr& image)
+void ImagePublisher::publish(sensor_msgs::msg::Image::ConstSharedPtr image)
 {
   if (image && pub_.getNumSubscribers() > 0)
   {
@@ -226,10 +226,10 @@ void copyInverse(uint8_t *tp, const uint8_t *sp, size_t nmemb, size_t m)
 
 }
 
-sensor_msgs::ImagePtr rosImageFromBuffer(const std::string& frame_id, const rcg::Buffer* buffer,
+sensor_msgs::msg::Image::SharedPtr rosImageFromBuffer(const std::string& frame_id, const rcg::Buffer* buffer,
   uint32_t part, bool rotate)
 {
-  sensor_msgs::ImagePtr im;
+  sensor_msgs::msg::Image::SharedPtr im;
   std::string pixelformat;
   int bytes_per_pixel;
 
@@ -241,22 +241,22 @@ sensor_msgs::ImagePtr rosImageFromBuffer(const std::string& frame_id, const rcg:
   {
     rotate=false;
 
-    ROS_WARN_STREAM("Rotation is not supporte for image format: " << pixelformat);
+    RCLCPP_WARN_STREAM(rclcpp::get_logger("rc_genicam_camera::image_publisher::rosImageFromBuffer"), 
+    "Rotation is not supporte for image format: " << pixelformat);
   }
 
   if (pixelformat.size() > 0)
   {
     // create image and initialize header
 
-    im = boost::make_shared<sensor_msgs::Image>();
+    im = std::make_shared<sensor_msgs::msg::Image>();
     im->encoding = pixelformat;
 
     const uint64_t freq = 1000000000ul;
     uint64_t time = buffer->getTimestampNS();
 
-    im->header.seq = 0;
     im->header.stamp.sec = time / freq;
-    im->header.stamp.nsec = time - freq * im->header.stamp.sec;
+    im->header.stamp.nanosec = time - freq * im->header.stamp.sec;
     im->header.frame_id = frame_id;
 
     // set image size

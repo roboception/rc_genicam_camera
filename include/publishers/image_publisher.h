@@ -34,9 +34,9 @@
 #ifndef RCGCCAM_IMAGEPUBLISHER_H
 #define RCGCCAM_IMAGEPUBLISHER_H
 
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 #include <image_transport/image_transport.h>
-#include <sensor_msgs/Image.h>
+#include <sensor_msgs/msg/image.hpp>
 
 #include <rc_genicam_api/buffer.h>
 
@@ -58,7 +58,7 @@ public:
 
   bool used();
 
-  void publish(const sensor_msgs::ImagePtr& image);
+  void publish(sensor_msgs::msg::Image::ConstSharedPtr image);
 
 private:
   ImagePublisher(const ImagePublisher&);             // forbidden
@@ -76,7 +76,7 @@ std::string rosPixelformat(int& bytes_per_pixel, uint64_t pixelformat);
 /**
   Converts a (supported) image in a GenICam buffer into a ROS image.
 */
-sensor_msgs::ImagePtr rosImageFromBuffer(const std::string& frame_id, const rcg::Buffer* buffer,
+sensor_msgs::msg::Image::SharedPtr rosImageFromBuffer(const std::string& frame_id, const rcg::Buffer* buffer,
   uint32_t part, bool rotate);
 
 }  // namespace rcgccam
