@@ -73,7 +73,7 @@ public:
     @return     Dropped camera info message, null pointer if nothing is
                 dropped.
   */
-  sensor_msgs::msg::CameraInfo::ConstSharedPtr add(sensor_msgs::msg::CameraInfo::ConstSharedPtr info);
+  sensor_msgs::msg::CameraInfo::SharedPtr add(sensor_msgs::msg::CameraInfo::SharedPtr info);
 
   /**
     Remove all camera infos that have a timestamp that is older or equal than
@@ -93,12 +93,12 @@ public:
     @param tolerance Maximum tolarance added or subtracted to the timestamp.
     @return          Pointer to camera info or 0.
   */
-  sensor_msgs::msg::CameraInfo::ConstSharedPtr find(const rclcpp::Time& timestamp) const;
+  sensor_msgs::msg::CameraInfo::SharedPtr find(const rclcpp::Time& timestamp) const;
 
 private:
   size_t maxsize_;
   uint64_t tolerance_;
-  std::vector<sensor_msgs::msg::CameraInfo::ConstSharedPtr> list_;
+  std::vector<sensor_msgs::msg::CameraInfo::SharedPtr> list_;
 };
 
 }  // namespace rcgccam

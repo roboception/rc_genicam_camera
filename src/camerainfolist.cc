@@ -54,11 +54,11 @@ void CameraInfoList::setTolerance(uint64_t tolerance)
   tolerance_ = tolerance;
 }
 
-sensor_msgs::msg::CameraInfo::ConstSharedPtr CameraInfoList::add(sensor_msgs::msg::CameraInfo::ConstSharedPtr info)
+sensor_msgs::msg::CameraInfo::SharedPtr CameraInfoList::add(sensor_msgs::msg::CameraInfo::SharedPtr info)
 {
   list_.push_back(info);
 
-  sensor_msgs::msg::CameraInfo::ConstSharedPtr ret;
+  sensor_msgs::msg::CameraInfo::SharedPtr ret;
 
   if (list_.size() > maxsize_)
   {
@@ -90,7 +90,7 @@ int CameraInfoList::removeOld(const rclcpp::Time& timestamp)
   return n;
 }
 
-sensor_msgs::msg::CameraInfo::ConstSharedPtr CameraInfoList::find(const rclcpp::Time& timestamp) const
+sensor_msgs::msg::CameraInfo::SharedPtr CameraInfoList::find(const rclcpp::Time& timestamp) const
 {
   for (size_t i = 0; i < list_.size(); i++)
   {
@@ -103,7 +103,7 @@ sensor_msgs::msg::CameraInfo::ConstSharedPtr CameraInfoList::find(const rclcpp::
     }
   }
 
-  return sensor_msgs::msg::CameraInfo::ConstSharedPtr();
+  return sensor_msgs::msg::CameraInfo::SharedPtr();
 }
 
 }  // namespace rcgccam
