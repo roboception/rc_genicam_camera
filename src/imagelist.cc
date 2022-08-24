@@ -54,11 +54,11 @@ void ImageList::setTolerance(uint64_t tolerance)
   tolerance_ = tolerance;
 }
 
-sensor_msgs::msg::Image::ConstSharedPtr ImageList::add(sensor_msgs::msg::Image::ConstSharedPtr image)
+sensor_msgs::msg::Image::SharedPtr ImageList::add(sensor_msgs::msg::Image::SharedPtr image)
 {
   list_.push_back(image);
 
-  sensor_msgs::msg::Image::ConstSharedPtr ret;
+  sensor_msgs::msg::Image::SharedPtr ret;
 
   if (list_.size() > maxsize_)
   {
@@ -90,7 +90,7 @@ int ImageList::removeOld(const rclcpp::Time& timestamp)
   return n;
 }
 
-sensor_msgs::msg::Image::ConstSharedPtr ImageList::find(const rclcpp::Time& timestamp) const
+sensor_msgs::msg::Image::SharedPtr ImageList::find(const rclcpp::Time& timestamp) const
 {
   for (size_t i = 0; i < list_.size(); i++)
   {
@@ -103,7 +103,7 @@ sensor_msgs::msg::Image::ConstSharedPtr ImageList::find(const rclcpp::Time& time
     }
   }
 
-  return sensor_msgs::msg::Image::ConstSharedPtr();
+  return sensor_msgs::msg::Image::SharedPtr();
 }
 
 }  // namespace rcgccam

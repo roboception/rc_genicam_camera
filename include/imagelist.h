@@ -71,7 +71,7 @@ public:
     @param image Image to be added.
     @return      Dropped image, null pointer if no image is dropped.
   */
-  sensor_msgs::msg::Image::ConstSharedPtr add(sensor_msgs::msg::Image::ConstSharedPtr image);
+  sensor_msgs::msg::Image::SharedPtr add(sensor_msgs::msg::Image::SharedPtr image);
 
   /**
     Remove all images that have a timestamp that is older or equal than the
@@ -91,12 +91,12 @@ public:
     @param tolerance Maximum tolarance added or subtracted to the timestamp.
     @return Pointer to image or 0.
   */
-  sensor_msgs::msg::Image::ConstSharedPtr find(const rclcpp::Time& timestamp) const;
+  sensor_msgs::msg::Image::SharedPtr find(const rclcpp::Time& timestamp) const;
 
 private:
   size_t maxsize_;
   uint64_t tolerance_;
-  std::vector<sensor_msgs::msg::Image::ConstSharedPtr> list_;
+  std::vector<sensor_msgs::msg::Image::SharedPtr> list_;
 };
 
 }  // namespace rcgccam
