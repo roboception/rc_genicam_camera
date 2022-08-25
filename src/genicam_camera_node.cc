@@ -56,8 +56,6 @@
 
 namespace rcgccam
 {
-// TODO check this 
-#define ROS_HAS_STEADYTIME (ROS_VERSION_MINIMUM(1, 13, 1) || ((ROS_VERSION_MINOR == 12) && ROS_VERSION_PATCH >= 8))
 
 explicit GenICamCameraNode::GenICamCameraNode(const std::string& node_name)
 : Node(node_name, rclcpp::NodeOptions().use_intra_process_comms(true))
