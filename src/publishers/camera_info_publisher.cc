@@ -31,7 +31,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "camera_info_publisher.h"
+#include "publishers/camera_info_publisher.h"
 
 #include <string>
 #include <map>

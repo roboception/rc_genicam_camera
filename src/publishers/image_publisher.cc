@@ -31,7 +31,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "image_publisher.h"
+#include "publishers/image_publisher.h"
 
 #include <rc_genicam_api/image.h>
 #include <rc_genicam_api/pixel_formats.h>
