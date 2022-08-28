@@ -49,7 +49,7 @@ include_directories(
 
 ament_export_include_directories("include/${PROJECT_NAME}")
 
-add_executable(${PROJECT_NAME}
+add_executable(${PROJECT_NAME}_node
   src/genicam_camera_node_main.cc
   src/publishers/camera_info_publisher.cc
   src/publishers/image_publisher.cc
@@ -59,14 +59,14 @@ add_executable(${PROJECT_NAME}
   src/timestamp_corrector.cc
 )
 
-ament_target_dependencies(${PROJECT_NAME}
+ament_target_dependencies(${PROJECT_NAME}_node
   rclcpp
   sensor_msgs
   image_transport
   rc_genicam_camera_interfaces
 )
 
-target_link_libraries(${PROJECT_NAME}
+target_link_libraries(${PROJECT_NAME}_node
   rc_genicam_api::rc_genicam_api
 )
 
@@ -74,7 +74,7 @@ target_link_libraries(${PROJECT_NAME}
 # # Install ##
 # ############
 
-install(TARGETS ${PROJECT_NAME}
+install(TARGETS ${PROJECT_NAME}_node
   DESTINATION lib/${PROJECT_NAME}
 )
 
