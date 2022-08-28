@@ -13,14 +13,14 @@
 
   <author email="heiko.hirschmueller@roboception.de">Heiko Hirschmueller</author>
 
-  <!-- system dependencies -->
-  <depend version_gte="2.0.3">rc_genicam_api</depend>
-
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <build_depend>rosidl_default_generators</build_depend>
   <exec_depend>rosidl_default_runtime</exec_depend>
-  
+
+  <!-- system dependencies -->
+  <!-- <depend version_gte="2.0.3">rc_genicam_api</depend> -->
+  <depend>rc_genicam_api</depend>
   <depend>rclcpp</depend>
   <depend>sensor_msgs</depend>
   <depend>image_transport</depend>

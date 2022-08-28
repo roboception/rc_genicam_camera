@@ -40,7 +40,7 @@ find_package(rc_genicam_camera_interfaces REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(image_transport REQUIRED)
-find_package(RC_GENICAM_API REQUIRED PATHS "/home/myron/personal/iye/libraries/rc_genicam_api")
+find_package(RC_GENICAM_API REQUIRED)
 
 include_directories(
   include
@@ -49,7 +49,7 @@ include_directories(
 
 ament_export_include_directories("include/${PROJECT_NAME}")
 
-add_executable(${PROJECT_NAME}_node
+add_executable(${PROJECT_NAME}
   src/genicam_camera_node_main.cc
   src/publishers/camera_info_publisher.cc
   src/publishers/image_publisher.cc
@@ -59,31 +59,29 @@ add_executable(${PROJECT_NAME}_node
   src/timestamp_corrector.cc
 )
 
-ament_target_dependencies(${PROJECT_NAME}_node
-  "rclcpp"
-  "sensor_msgs"
-  "image_transport"
-  "rc_genicam_camera_interfaces"
+ament_target_dependencies(${PROJECT_NAME}
+  rclcpp
+  sensor_msgs
+  image_transport
+  rc_genicam_camera_interfaces
 )
 
-target_link_libraries(${PROJECT_NAME}_node
+target_link_libraries(${PROJECT_NAME}
   rc_genicam_api::rc_genicam_api
-)
-
-install(TARGETS
-  ${PROJECT_NAME}_node
-  DESTINATION lib/${PROJECT_NAME}
-)
-
-# Install launch files.
-install(DIRECTORY
-  launch
-  DESTINATION share/${PROJECT_NAME}/
 )
 
 # ############
 # # Install ##
 # ############
+
+install(TARGETS ${PROJECT_NAME}
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+# Install launch files.
+install(DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME}/
+)
 
 # all install targets should use catkin DESTINATION variables
 # See http://ros.org/doc/api/catkin/html/adv_user_guide/variables.html
