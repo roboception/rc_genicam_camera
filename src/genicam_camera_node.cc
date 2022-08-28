@@ -198,14 +198,12 @@ void GenICamCameraNode::onInit()
 
   // setup service for getting and setting parameters
   get_param_service_ptr_ = this->create_service<rc_genicam_camera_interfaces::srv::GetGenICamParameter>(
-    "get_genicam_parameter",
-    std::bind(&GenICamCameraNode::getGenICamParameter, this, std::placeholders::_1)
-  );
+      "get_genicam_parameter",
+      std::bind(&GenICamCameraNode::getGenICamParameter, this, std::placeholders::_1, std::placeholders::_2));
 
   set_param_service_ptr_ = this->create_service<rc_genicam_camera_interfaces::srv::SetGenICamParameter>(
-    "set_genicam_parameter",
-    std::bind(&GenICamCameraNode::setGenICamParameter, this, std::placeholders::_1)
-  );
+      "set_genicam_parameter",
+      std::bind(&GenICamCameraNode::setGenICamParameter, this, std::placeholders::_1, std::placeholders::_2));
 
   // initialize publishers
   caminfo_pub_.init(this->shared_from_this(), calib.c_str(), calib_id);
@@ -304,8 +302,8 @@ void applyParameters(const std::shared_ptr<GenApi::CNodeMapRef>& nodemap, const 
 
 }  // namespace
 
-bool GenICamCameraNode::getGenICamParameter(rc_genicam_camera_interfaces::srv::GetGenICamParameter::Request& req,
-                                            rc_genicam_camera_interfaces::srv::GetGenICamParameter::Response& resp)
+bool GenICamCameraNode::getGenICamParameter(rcgc_get_srv::Request::SharedPtr req,
+                                            rcgc_get_srv::Response::SharedPtr resp)
 {
   std::lock_guard<std::mutex> lock(device_mtx_);
 
@@ -313,24 +311,24 @@ bool GenICamCameraNode::getGenICamParameter(rc_genicam_camera_interfaces::srv::G
   {
     try
     {
-      resp.value = rcg::getString(rcgnodemap_, req.name.c_str(), true);
-      resp.return_code.value = resp.return_code.SUCCESS;
-      resp.return_code.message = "ok";
+      resp->value = rcg::getString(rcgnodemap_, req->name.c_str(), true);
+      resp->return_code.value = resp->return_code.SUCCESS;
+      resp->return_code.message = "ok";
     }
     catch (const std::exception& ex)
     {
       RCLCPP_ERROR_STREAM(this->get_logger(), "rc_genicam_camera: Cannot get parameter: " << ex.what());
 
-      resp.return_code.value = resp.return_code.INVALID_ARGUMENT;
-      resp.return_code.message = ex.what();
+      resp->return_code.value = resp->return_code.INVALID_ARGUMENT;
+      resp->return_code.message = ex.what();
     }
   }
 
   return true;
 }
 
-bool GenICamCameraNode::setGenICamParameter(rc_genicam_camera_interfaces::srv::SetGenICamParameter::Request& req,
-                                            rc_genicam_camera_interfaces::srv::SetGenICamParameter::Response& resp)
+bool GenICamCameraNode::setGenICamParameter(rcgc_set_srv::Request::SharedPtr req,
+                                            rcgc_set_srv::Response::SharedPtr resp)
 {
   std::lock_guard<std::mutex> lock(device_mtx_);
 
@@ -338,17 +336,17 @@ bool GenICamCameraNode::setGenICamParameter(rc_genicam_camera_interfaces::srv::S
   {
     try
     {
-      applyParameters(rcgnodemap_, req.parameters);
+      applyParameters(rcgnodemap_, req->parameters);
 
-      resp.return_code.value = resp.return_code.SUCCESS;
-      resp.return_code.message = "ok";
+      resp->return_code.value = resp->return_code.SUCCESS;
+      resp->return_code.message = "ok";
     }
     catch (const std::exception& ex)
     {
       RCLCPP_ERROR_STREAM(this->get_logger(), "rc_genicam_camera: Cannot set parameters: " << ex.what());
 
-      resp.return_code.value = resp.return_code.INVALID_ARGUMENT;
-      resp.return_code.message = ex.what();
+      resp->return_code.value = resp->return_code.INVALID_ARGUMENT;
+      resp->return_code.message = ex.what();
     }
   }
 

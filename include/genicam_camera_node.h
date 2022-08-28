@@ -58,6 +58,8 @@ namespace rcgccam
 
 class GenICamCameraNode : public rclcpp::Node
 {
+  using rcgc_get_srv = rc_genicam_camera_interfaces::srv::GetGenICamParameter;
+  using rcgc_set_srv = rc_genicam_camera_interfaces::srv::SetGenICamParameter;
 
 public:
   explicit GenICamCameraNode(const std::string& node_name = "rc_genicam_camera_node");
@@ -65,11 +67,11 @@ public:
 
   virtual void onInit();
 
-  bool getGenICamParameter(rc_genicam_camera_interfaces::srv::GetGenICamParameter::Request& req,
-                           rc_genicam_camera_interfaces::srv::GetGenICamParameter::Response& resp);
+  bool getGenICamParameter(rcgc_get_srv::Request::SharedPtr req,
+                           rcgc_get_srv::Response::SharedPtr resp);
 
-  bool setGenICamParameter(rc_genicam_camera_interfaces::srv::SetGenICamParameter::Request& req,
-                           rc_genicam_camera_interfaces::srv::SetGenICamParameter::Response& resp);
+  bool setGenICamParameter(rcgc_set_srv::Request::SharedPtr req,
+                           rcgc_set_srv::Response::SharedPtr resp);
 
   void syncInfo(sensor_msgs::msg::CameraInfo::SharedPtr info);
 
@@ -82,8 +84,8 @@ private:
 
   rclcpp::Subscription<sensor_msgs::msg::CameraInfo>::SharedPtr sub_sync_info_ptr_;
 
-  rclcpp::Service<rc_genicam_camera_interfaces::srv::GetGenICamParameter>::SharedPtr get_param_service_ptr_;
-  rclcpp::Service<rc_genicam_camera_interfaces::srv::SetGenICamParameter>::SharedPtr set_param_service_ptr_;
+  rclcpp::Service<rcgc_get_srv>::SharedPtr get_param_service_ptr_;
+  rclcpp::Service<rcgc_set_srv>::SharedPtr set_param_service_ptr_;
 
   std::string frame_id_;
 

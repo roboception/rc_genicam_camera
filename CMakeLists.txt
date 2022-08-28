@@ -38,20 +38,9 @@ find_package(ament_cmake REQUIRED)
 find_package(builtin_interfaces REQUIRED)
 find_package(rc_genicam_camera_interfaces REQUIRED)
 find_package(rclcpp REQUIRED)
-# find_package(std_msgs REQUIRED)
-# find_package(std_srvs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(RC_GENICAM_API REQUIRED PATHS "/home/myron/personal/iye/libraries/rc_genicam_api")
-
-# rosidl_generate_interfaces(${PROJECT_NAME}
-#   "msg/ReturnValue.msg"
-#   "srv/GetGenICamParameter.srv"
-#   "srv/SetGenICamParameter.srv"
-#   # DEPENDENCIES builtin_interfaces
-# )
-
-# ament_export_dependencies(rosidl_default_runtime)
 
 include_directories(
   include
@@ -59,36 +48,6 @@ include_directories(
 )
 
 ament_export_include_directories("include/${PROJECT_NAME}")
-
-# add_library(${PROJECT_NAME}_libs
-#   src/publishers/camera_info_publisher.cc
-#   src/publishers/image_publisher.cc
-#   src/camerainfolist.cc
-#   src/genicam_camera_node.cc
-#   src/imagelist.cc
-#   src/timestamp_corrector.cc
-# )
-
-# target_link_libraries(${PROJECT_NAME}_libs
-#   # PUBLIC
-#   #   rclcpp::rclcpp
-#   #   ${builtin_interfaces_TARGETS}
-#   #   ${sensor_msgs_TARGETS}
-#   # PRIVATE
-#     # ${RC_GENICAM_API_LIBRARIES}
-#     rc_genicam_api::rc_genicam_api
-# )
-
-# ament_target_dependencies(${PROJECT_NAME}_libs
-#   "rclcpp"
-#   "builtin_interfaces"
-#   "sensor_msgs"
-#   # ${PROJECT_NAME}
-# )
-
-# target_link_libraries(${PROJECT_NAME}_libs
-#   rc_genicam_api::rc_genicam_api
-# )
 
 add_executable(${PROJECT_NAME}_node
   src/genicam_camera_node_main.cc
@@ -103,6 +62,7 @@ add_executable(${PROJECT_NAME}_node
 ament_target_dependencies(${PROJECT_NAME}_node
   "rclcpp"
   "sensor_msgs"
+  "image_transport"
   "rc_genicam_camera_interfaces"
 )
 
@@ -112,7 +72,6 @@ target_link_libraries(${PROJECT_NAME}_node
 
 install(TARGETS
   ${PROJECT_NAME}_node
-  # ${PROJECT_NAME}_libs
   DESTINATION lib/${PROJECT_NAME}
 )
 
@@ -121,8 +80,6 @@ install(DIRECTORY
   launch
   DESTINATION share/${PROJECT_NAME}/
 )
-
-# add_subdirectory(src)
 
 # ############
 # # Install ##
