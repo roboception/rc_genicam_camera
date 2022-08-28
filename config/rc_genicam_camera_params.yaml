@@ -1,0 +1,14 @@
+rc_genicam_camera_node:
+  ros__parameters:
+    device:
+    gev_access:
+    frame_id:
+    image_prefix:
+    rotate:
+    config_file:
+    calib_file:
+    calib_id:
+    host_timestamp:
+    timestamp_tolerance:
+    sync_info:
+    sync_tolderance:
