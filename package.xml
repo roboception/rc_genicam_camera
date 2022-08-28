@@ -22,15 +22,12 @@
   <exec_depend>rosidl_default_runtime</exec_depend>
   
   <depend>rclcpp</depend>
-  <depend>std_srvs</depend>
-  <depend>std_msgs</depend>
   <depend>sensor_msgs</depend>
   <depend>image_transport</depend>
+  <depend>rc_genicam_camera_interfaces</depend>
   <!-- <depend>dynamic_reconfigure</depend> -->
   <!-- <depend>diagnostic_updater</depend> -->
   <!-- <depend>diagnostic_msgs</depend> -->
-  
-  <member_of_group>rosidl_interface_packages</member_of_group>
 
   <doc_depend>doxygen</doc_depend>
 

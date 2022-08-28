@@ -40,7 +40,7 @@
 #include <rc_genicam_api/config.h>
 #include <rc_genicam_api/pixel_formats.h>
 
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 #include <exception>
 
 #include <fstream>
@@ -57,7 +57,7 @@
 namespace rcgccam
 {
 
-explicit GenICamCameraNode::GenICamCameraNode(const std::string& node_name)
+GenICamCameraNode::GenICamCameraNode(const std::string& node_name)
 : Node(node_name, rclcpp::NodeOptions().use_intra_process_comms(true))
 {
   timestamp_tolerance_ = 0;
@@ -197,12 +197,12 @@ void GenICamCameraNode::onInit()
   }
 
   // setup service for getting and setting parameters
-  get_param_service_ptr_ = this->create_service<rc_genicam_camera::srv::GetGenICamParameter>(
+  get_param_service_ptr_ = this->create_service<rc_genicam_camera_interfaces::srv::GetGenICamParameter>(
     "get_genicam_parameter",
     std::bind(&GenICamCameraNode::getGenICamParameter, this, std::placeholders::_1)
   );
 
-  set_param_service_ptr_ = this->create_service<rc_genicam_camera::srv::SetGenICamParameter>(
+  set_param_service_ptr_ = this->create_service<rc_genicam_camera_interfaces::srv::SetGenICamParameter>(
     "set_genicam_parameter",
     std::bind(&GenICamCameraNode::setGenICamParameter, this, std::placeholders::_1)
   );
@@ -304,8 +304,8 @@ void applyParameters(const std::shared_ptr<GenApi::CNodeMapRef>& nodemap, const 
 
 }  // namespace
 
-bool GenICamCameraNode::getGenICamParameter(rc_genicam_camera::srv::GetGenICamParameter::Request& req,
-                                            rc_genicam_camera::srv::GetGenICamParameter::Response& resp)
+bool GenICamCameraNode::getGenICamParameter(rc_genicam_camera_interfaces::srv::GetGenICamParameter::Request& req,
+                                            rc_genicam_camera_interfaces::srv::GetGenICamParameter::Response& resp)
 {
   std::lock_guard<std::mutex> lock(device_mtx_);
 
@@ -329,8 +329,8 @@ bool GenICamCameraNode::getGenICamParameter(rc_genicam_camera::srv::GetGenICamPa
   return true;
 }
 
-bool GenICamCameraNode::setGenICamParameter(rc_genicam_camera::srv::SetGenICamParameter::Request& req,
-                                            rc_genicam_camera::srv::SetGenICamParameter::Response& resp)
+bool GenICamCameraNode::setGenICamParameter(rc_genicam_camera_interfaces::srv::SetGenICamParameter::Request& req,
+                                            rc_genicam_camera_interfaces::srv::SetGenICamParameter::Response& resp)
 {
   std::lock_guard<std::mutex> lock(device_mtx_);
 
