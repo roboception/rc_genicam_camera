@@ -34,9 +34,9 @@
 #ifndef RCGCCAM_CAMERAINFOPUBLISHER_H
 #define RCGCCAM_CAMERAINFOPUBLISHER_H
 
-#include <ros/ros.h>
-#include <sensor_msgs/CameraInfo.h>
-#include <sensor_msgs/Image.h>
+#include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/camera_info.hpp>
+#include <sensor_msgs/msg/image.hpp>
 
 #include <string>
 
@@ -57,18 +57,18 @@ public:
     @param id              Camera ID, i.e. < 0 for no ID, 0 for left and 1 for
                            right camera.
   */
-  void init(ros::NodeHandle& nh, const char* calib_file, int id);
+  void init(rclcpp::Node::SharedPtr node, const char* calib_file, int id);
 
   bool used();
 
-  void publish(const sensor_msgs::ImagePtr& image);
+  void publish(const sensor_msgs::msg::Image::ConstSharedPtr& image);
 
 private:
   CameraInfoPublisher(const CameraInfoPublisher&);             // forbidden
   CameraInfoPublisher& operator=(const CameraInfoPublisher&);  // forbidden
 
-  sensor_msgs::CameraInfo info_;
-  ros::Publisher pub_;
+  sensor_msgs::msg::CameraInfo info_;
+  rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr pub_ptr_;
 };
 
 }  // namespace rcgccam

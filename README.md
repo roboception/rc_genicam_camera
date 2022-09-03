@@ -1,14 +1,18 @@
-rc_genicam_camera
------------------
+# rc_genicam_camera
 
 This nodelet permits access to the configuration of a GenICam compatible camera
 and publishes raw images and camera_info messages according to the ROS image
 pipeline.
 
-Configuration
--------------
+## Install dependencies
+```bash
+rosdep update
+rosdep install --from-paths src -y --ignore-src
+```
 
-#### Parameters
+## Configuration
+
+### Parameters
 
 Parameters to be set to the ROS param server before run-time.
 
@@ -95,7 +99,7 @@ Parameters to be set to the ROS param server before run-time.
   ID < 0. For stereo systems, 0 is used for the left camera and 1 for the right
   camera. Default: -1.
 
-#### Parameters for Synchronization
+### Parameters for Synchronization
 
 The following parameters are used for receiving and associating the time stamp
 from the camera info of a hardware synchronized master camera that is

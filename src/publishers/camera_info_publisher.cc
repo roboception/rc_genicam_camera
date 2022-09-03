@@ -31,7 +31,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "camera_info_publisher.h"
+#include "publishers/camera_info_publisher.h"
 
 #include <string>
 #include <map>
@@ -40,12 +40,12 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <array>
 
 namespace rcgccam
 {
 namespace
 {
-
 /*
   Remove leading and trailing spaces from string.
 */
@@ -138,12 +138,13 @@ bool loadFile(std::map<std::string, std::string>& data, const char* name)
   Create a key like camera[.<id>].<name>
 */
 
-inline std::string createKey(const char *name, int id)
+inline std::string createKey(const char* name, int id)
 {
   std::ostringstream out;
 
   out << "camera.";
-  if (id >= 0) out << id << '.';
+  if (id >= 0)
+    out << id << '.';
   out << name;
 
   return out.str();
@@ -155,7 +156,7 @@ inline std::string createKey(const char *name, int id)
 */
 
 template <class T>
-void getValue(const std::map<std::string, std::string>& data, const std::string &key, T& value, const char* defvalue)
+void getValue(const std::map<std::string, std::string>& data, const std::string& key, T& value, const char* defvalue)
 {
   std::map<std::string, std::string>::const_iterator it = data.find(key.c_str());
   std::string v;
@@ -178,8 +179,7 @@ void getValue(const std::map<std::string, std::string>& data, const std::string 
   returned if the key does not exist.
 */
 
-bool getMatrix33(const std::map<std::string, std::string>& data, const std::string &key,
-                 double M[3][3])
+bool getMatrix33(const std::map<std::string, std::string>& data, const std::string& key, double M[3][3])
 {
   std::map<std::string, std::string>::const_iterator it = data.find(key.c_str());
   std::string v;
@@ -233,8 +233,7 @@ bool getMatrix33(const std::map<std::string, std::string>& data, const std::stri
   returned if the key does not exist.
 */
 
-bool getVector3(const std::map<std::string, std::string>& data, const std::string &key,
-                double A[3])
+bool getVector3(const std::map<std::string, std::string>& data, const std::string& key, double A[3])
 {
   std::map<std::string, std::string>::const_iterator it = data.find(key.c_str());
   std::string v;
@@ -277,13 +276,13 @@ bool getVector3(const std::map<std::string, std::string>& data, const std::strin
 
 inline void mulMatrix33Matrix33(double ret[3][3], double A[3][3], double B[3][3])
 {
-  for (int k=0; k<3; k++)
+  for (int k = 0; k < 3; k++)
   {
-    for (int i=0; i<3; i++)
+    for (int i = 0; i < 3; i++)
     {
       ret[k][i] = 0;
 
-      for (int j=0; j<3; j++)
+      for (int j = 0; j < 3; j++)
       {
         ret[k][i] += A[k][j] * B[j][i];
       }
@@ -293,10 +292,10 @@ inline void mulMatrix33Matrix33(double ret[3][3], double A[3][3], double B[3][3]
 
 inline void mulMatrix33Vector3(double ret[3], double M[3][3], double V[3])
 {
-  for (int k=0; k<3; k++)
+  for (int k = 0; k < 3; k++)
   {
     ret[k] = 0;
-    for (int i=0; i<3; i++)
+    for (int i = 0; i < 3; i++)
     {
       ret[k] += M[k][i] * V[i];
     }
@@ -322,7 +321,7 @@ inline void transposeMatrix33(double M[3][3])
   Store the given 3x3 matrix in a linear array.
 */
 
-inline void storeMatrix(boost::array<double, 9>& values, double M[3][3])
+inline void storeMatrix(std::array<double, 9>& values, double M[3][3])
 {
   int j = 0;
   for (int k = 0; k < 3; k++)
@@ -340,17 +339,17 @@ CameraInfoPublisher::CameraInfoPublisher()
 {
 }
 
-void CameraInfoPublisher::init(ros::NodeHandle& nh, const char* calib_file, int id)
+void CameraInfoPublisher::init(rclcpp::Node::SharedPtr node, const char* calib_file, int id)
 {
   // advertise topic
 
-  pub_ = nh.advertise<sensor_msgs::CameraInfo>("camera_info", 1);
+  pub_ptr_ = node->create_publisher<sensor_msgs::msg::CameraInfo>("camera_info", rclcpp::SensorDataQoS());
 
   // check id
 
   if (id > 1)
   {
-    ROS_ERROR_STREAM("Invalid camera ID, only < 0, 0 and 1 allowed: " << id);
+    RCLCPP_ERROR_STREAM(node->get_logger(), "Invalid camera ID, only < 0, 0 and 1 allowed: " << id);
     return;
   }
 
@@ -372,12 +371,12 @@ void CameraInfoPublisher::init(ros::NodeHandle& nh, const char* calib_file, int 
       double A[3][3];
       if (!getMatrix33(data, createKey("A", id), A))
       {
-        ROS_ERROR("Getting camera.A from calibration file failed");
-        info_ = sensor_msgs::CameraInfo();
+        RCLCPP_ERROR(node->get_logger(), "Getting camera.A from calibration file failed");
+        info_ = sensor_msgs::msg::CameraInfo();
         return;
       }
 
-      storeMatrix(info_.K, A);
+      storeMatrix(info_.k, A);
 
       // get lens distortion
 
@@ -391,12 +390,12 @@ void CameraInfoPublisher::init(ros::NodeHandle& nh, const char* calib_file, int 
       if (e1 != 0 || e2 != 0 || e3 != 0 || e4 != 0)
       {
         info_.distortion_model = "equidistant";
-        info_.D.resize(4);
+        info_.d.resize(4);
 
-        info_.D[0] = e1;
-        info_.D[1] = e2;
-        info_.D[2] = e3;
-        info_.D[3] = e4;
+        info_.d[0] = e1;
+        info_.d[1] = e2;
+        info_.d[2] = e3;
+        info_.d[3] = e4;
       }
       else
       {
@@ -409,13 +408,13 @@ void CameraInfoPublisher::init(ros::NodeHandle& nh, const char* calib_file, int 
         getValue(data, createKey("p2", id), p2, "0");
 
         info_.distortion_model = "plumb_bob";
-        info_.D.resize(5);
+        info_.d.resize(5);
 
-        info_.D[0] = k1;
-        info_.D[1] = k2;
-        info_.D[2] = p1;
-        info_.D[3] = p2;
-        info_.D[4] = k3;
+        info_.d[0] = k1;
+        info_.d[1] = k2;
+        info_.d[2] = p1;
+        info_.d[3] = p2;
+        info_.d[4] = k3;
       }
 
       // determine focal length after rectification
@@ -431,18 +430,18 @@ void CameraInfoPublisher::init(ros::NodeHandle& nh, const char* calib_file, int 
           double A0[3][3], A1[3][3];
           if (getMatrix33(data, createKey("A", 0), A0) && getMatrix33(data, createKey("A", 1), A1))
           {
-            f = (A0[0][0] + A0[1][1] + A1[0][0] + A1[1][1])/4;
+            f = (A0[0][0] + A0[1][1] + A1[0][0] + A1[1][1]) / 4;
           }
           else
           {
-            ROS_ERROR("Getting camera.A0 and camera.A1 from calibration file failed");
-            info_ = sensor_msgs::CameraInfo();
+            RCLCPP_ERROR(node->get_logger(), "Getting camera.A0 and camera.A1 from calibration file failed");
+            info_ = sensor_msgs::msg::CameraInfo();
             return;
           }
         }
         else
         {
-          f = (A[0][0] + A[1][1])/2;
+          f = (A[0][0] + A[1][1]) / 2;
         }
       }
 
@@ -486,12 +485,12 @@ void CameraInfoPublisher::init(ros::NodeHandle& nh, const char* calib_file, int 
 
         double Rrect[3][3];
 
-        Rrect[0][0] = T[0]/t;
-        Rrect[1][0] = T[1]/t;
-        Rrect[2][0] = T[2]/t;
+        Rrect[0][0] = T[0] / t;
+        Rrect[1][0] = T[1] / t;
+        Rrect[2][0] = T[2] / t;
 
-        Rrect[0][1] = -T[1]/l;
-        Rrect[1][1] = T[0]/l;
+        Rrect[0][1] = -T[1] / l;
+        Rrect[1][1] = T[0] / l;
         Rrect[2][1] = 0;
 
         Rrect[0][2] = Rrect[1][0] * Rrect[2][1] - Rrect[2][0] * Rrect[1][1];
@@ -501,7 +500,7 @@ void CameraInfoPublisher::init(ros::NodeHandle& nh, const char* calib_file, int 
         if (id == 0)
         {
           transposeMatrix33(Rrect);
-          storeMatrix(info_.R, Rrect);
+          storeMatrix(info_.r, Rrect);
         }
         else
         {
@@ -509,36 +508,36 @@ void CameraInfoPublisher::init(ros::NodeHandle& nh, const char* calib_file, int 
           mulMatrix33Matrix33(Rrect_right, R, Rrect);
 
           transposeMatrix33(Rrect_right);
-          storeMatrix(info_.R, Rrect_right);
+          storeMatrix(info_.r, Rrect_right);
         }
       }
       else
       {
         // identity for mono camera
 
-        info_.R[1] = info_.R[2] = info_.R[3] = 0;
-        info_.R[0] = info_.R[4] = info_.R[8] = 1;
-        info_.R[5] = info_.R[6] = info_.R[7] = 0;
+        info_.r[1] = info_.r[2] = info_.r[3] = 0;
+        info_.r[0] = info_.r[4] = info_.r[8] = 1;
+        info_.r[5] = info_.r[6] = info_.r[7] = 0;
       }
 
       // define projection matrix after rectification
 
-      info_.P[0] = f;
-      info_.P[1] = 0;
-      info_.P[2] = info_.width/2.0;
-      info_.P[3] = 0;
-      info_.P[4] = 0;
-      info_.P[5] = f;
-      info_.P[6] = info_.height/2.0;
-      info_.P[7] = 0;
-      info_.P[8] = 0;
-      info_.P[9] = 0;
-      info_.P[10] = 1;
-      info_.P[11] = 0;
+      info_.p[0] = f;
+      info_.p[1] = 0;
+      info_.p[2] = info_.width / 2.0;
+      info_.p[3] = 0;
+      info_.p[4] = 0;
+      info_.p[5] = f;
+      info_.p[6] = info_.height / 2.0;
+      info_.p[7] = 0;
+      info_.p[8] = 0;
+      info_.p[9] = 0;
+      info_.p[10] = 1;
+      info_.p[11] = 0;
 
       if (id == 1)
       {
-        info_.P[3] = -f * t;
+        info_.p[3] = -f * t;
       }
 
       info_.binning_x = 1;
@@ -546,29 +545,29 @@ void CameraInfoPublisher::init(ros::NodeHandle& nh, const char* calib_file, int 
     }
     else
     {
-      ROS_ERROR_STREAM("gc_genicam_camera: Cannot load camera calibration: " << calib_file);
+      RCLCPP_ERROR_STREAM(node->get_logger(), "gc_genicam_camera: Cannot load camera calibration: " << calib_file);
     }
   }
 }
 
 bool CameraInfoPublisher::used()
 {
-  return pub_.getNumSubscribers() > 0;
+  return pub_ptr_->get_subscription_count() > 0;
 }
 
-void CameraInfoPublisher::publish(const sensor_msgs::ImagePtr& image)
+void CameraInfoPublisher::publish(const sensor_msgs::msg::Image::ConstSharedPtr& image)
 {
-  if (image && pub_.getNumSubscribers() > 0)
+  if (image && pub_ptr_->get_subscription_count() > 0)
   {
     info_.header = image->header;
 
-    if (info_.K[0] == 0)
+    if (info_.k[0] == 0)
     {
       info_.width = image->width;
       info_.height = image->height;
     }
 
-    pub_.publish(info_);
+    pub_ptr_->publish(info_);
   }
 }
 

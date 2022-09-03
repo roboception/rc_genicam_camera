@@ -39,9 +39,9 @@
 #include "publishers/camera_info_publisher.h"
 #include "publishers/image_publisher.h"
 
-#include <nodelet/nodelet.h>
+#include <rclcpp/rclcpp.hpp>
 #include <message_filters/subscriber.h>
-#include <sensor_msgs/CameraInfo.h>
+#include <sensor_msgs/msg/camera_info.hpp>
 
 #include <GenApi/GenApi.h>
 #include <rc_genicam_api/device.h>
@@ -50,41 +50,38 @@
 #include <mutex>
 #include <atomic>
 
-#include <rc_genicam_camera/GetGenICamParameter.h>
-#include <rc_genicam_camera/SetGenICamParameter.h>
+#include <rc_genicam_camera_interfaces/srv/set_gen_i_cam_parameter.hpp>
+#include <rc_genicam_camera_interfaces/srv/get_gen_i_cam_parameter.hpp>
 
 namespace rcgccam
 {
-
-class GenICamCameraNodelet : public nodelet::Nodelet
+class GenICamCameraNode : public rclcpp::Node
 {
+  using rcgc_get_srv = rc_genicam_camera_interfaces::srv::GetGenICamParameter;
+  using rcgc_set_srv = rc_genicam_camera_interfaces::srv::SetGenICamParameter;
 
 public:
-
-  GenICamCameraNodelet();
-  virtual ~GenICamCameraNodelet();
+  explicit GenICamCameraNode(const std::string& node_name = "rc_genicam_camera_node");
+  virtual ~GenICamCameraNode();
 
   virtual void onInit();
 
-  bool getGenICamParameter(rc_genicam_camera::GetGenICamParameter::Request& req,
-                           rc_genicam_camera::GetGenICamParameter::Response& resp);
+  bool getGenICamParameter(rcgc_get_srv::Request::SharedPtr req, rcgc_get_srv::Response::SharedPtr resp);
 
-  bool setGenICamParameter(rc_genicam_camera::SetGenICamParameter::Request& req,
-                           rc_genicam_camera::SetGenICamParameter::Response& resp);
+  bool setGenICamParameter(rcgc_set_srv::Request::SharedPtr req, rcgc_set_srv::Response::SharedPtr resp);
 
-  void syncInfo(sensor_msgs::CameraInfoPtr info);
+  void syncInfo(sensor_msgs::msg::CameraInfo::SharedPtr info);
 
 private:
-
   void grab(std::string device, rcg::Device::ACCESS access, std::string config);
 
   double timestamp_tolerance_;
   double sync_tolerance_;
 
-  ros::Subscriber sub_sync_info_;
+  rclcpp::Subscription<sensor_msgs::msg::CameraInfo>::SharedPtr sub_sync_info_ptr_;
 
-  ros::ServiceServer get_param_service_;
-  ros::ServiceServer set_param_service_;
+  rclcpp::Service<rcgc_get_srv>::SharedPtr get_param_service_ptr_;
+  rclcpp::Service<rcgc_set_srv>::SharedPtr set_param_service_ptr_;
 
   std::string frame_id_;
 

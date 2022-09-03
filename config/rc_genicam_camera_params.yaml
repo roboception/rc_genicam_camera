@@ -1,0 +1,16 @@
+rc_genicam_camera_node:
+  ros__parameters:
+    device: "23853944" #BASLER
+    # device: "18486677" #FLIR1
+    # device: "18486668" #FLIR2
+    gev_access: "control" #control/exclusive
+    # frame_id: "cam0" #camera frame ID, default camera[<calib_id>
+    # image_prefix: "/tmp/cam0" #to store images
+    rotate: False #True for rotate 180
+    config_file: "install/rc_genicam_camera/share/rc_genicam_camera/config/basler.config" #genicam config file, set wrt ros2 workspace, this is where it is installed check install config dir in cmakelists. or set absolute path
+    # calib_file: "/path/to/calib" #camera calib file
+    # calib_id: -1 #0 for left 1 for right, -1 default
+    # host_timestamp: True #True for using the host time, False default
+    # timestamp_tolerance: #Maximum acceptable tolerance in seconds between system and camera clock, default 0.01
+    # sync_info: #Name of topic that provides CameraInfo messages at the time when image acquisition is triggered via a hardware signal
+    # sync_tolerance: #Maximum acceptable tolerance in seconds between the CameraInfo timestamps and the image acquisition timestamps

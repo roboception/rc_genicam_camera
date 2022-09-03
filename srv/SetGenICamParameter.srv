@@ -1,9 +1,0 @@
-# Description: Set the values of GenICam parameters.
-
-# One or more GenICam <name>=<value> pair, separated by spaces
-string parameters
-
----
-
-# Return code
-rc_genicam_camera/ReturnValue return_code

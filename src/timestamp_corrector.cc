@@ -118,7 +118,7 @@ bool TimestampCorrector::determineOffset(const std::shared_ptr<GenApi::CNodeMapR
 
     if (ts == 0)
     {
-      ts = rcg::getInteger(nodemap, "Timestamp"); // fallback for Matrix Vision USB3 cameras
+      ts = rcg::getInteger(nodemap, "Timestamp");  // fallback for Matrix Vision USB3 cameras
     }
 
     offset_ = before_ns + (accuracy_ >> 1) - ts;
@@ -132,12 +132,12 @@ bool TimestampCorrector::determineOffset(const std::shared_ptr<GenApi::CNodeMapR
   return false;
 }
 
-int64_t TimestampCorrector::correct(ros::Time& time)
+int64_t TimestampCorrector::correct(builtin_interfaces::msg::Time& time)
 {
   if (tolerance_ >= 0 && accuracy_ >= 0)
   {
-    int64_t t = static_cast<int64_t>(time.toNSec());
-    time.fromNSec(static_cast<uint64_t>(t + offset_));
+    int64_t t = static_cast<int64_t>(time.nanosec);
+    time = rclcpp::Time(static_cast<uint64_t>(t + offset_));
 
     return accuracy_;
   }

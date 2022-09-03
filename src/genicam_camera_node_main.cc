@@ -1,6 +1,4 @@
 /*
- * This file is part of the rc_genicam_camera package.
- *
  * Copyright (c) 2019 Roboception GmbH
  * All rights reserved
  *
@@ -33,77 +31,18 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "camerainfolist.h"
+#include <rclcpp/rclcpp.hpp>
+#include "genicam_camera_node.h"
 
-#include <algorithm>
+int main(int argc, char** argv)
+{
+  rclcpp::init(argc, argv);
+  auto genicam_camera_node = std::make_shared<rcgccam::GenICamCameraNode>("rc_genicam_camera_node");
 
-namespace rcgccam
-{
-CameraInfoList::CameraInfoList()
-{
-  maxsize_ = 25;
+  genicam_camera_node->onInit();
+
+  rclcpp::spin(genicam_camera_node);
+
+  rclcpp::shutdown();
+  return 0;
 }
-
-void CameraInfoList::setSize(size_t maxsize)
-{
-  maxsize_ = std::max(static_cast<size_t>(1), maxsize);
-}
-
-void CameraInfoList::setTolerance(uint64_t tolerance)
-{
-  tolerance_ = tolerance;
-}
-
-sensor_msgs::msg::CameraInfo::SharedPtr CameraInfoList::add(sensor_msgs::msg::CameraInfo::SharedPtr info)
-{
-  list_.push_back(info);
-
-  sensor_msgs::msg::CameraInfo::SharedPtr ret;
-
-  if (list_.size() > maxsize_)
-  {
-    ret = list_[0];
-    list_.erase(list_.begin());
-  }
-
-  return ret;
-}
-
-int CameraInfoList::removeOld(const rclcpp::Time& timestamp)
-{
-  size_t i = 0;
-  int n = 0;
-
-  while (i < list_.size())
-  {
-    if (rclcpp::Time(list_[i]->header.stamp) <= timestamp)
-    {
-      list_.erase(list_.begin() + static_cast<int>(i));
-      n++;
-    }
-    else
-    {
-      i++;
-    }
-  }
-
-  return n;
-}
-
-sensor_msgs::msg::CameraInfo::SharedPtr CameraInfoList::find(const rclcpp::Time& timestamp) const
-{
-  for (size_t i = 0; i < list_.size(); i++)
-  {
-    uint64_t ts = timestamp.nanoseconds();
-    uint64_t info_ts = list_[i]->header.stamp.nanosec;
-
-    if (info_ts >= ts - tolerance_ && info_ts <= ts + tolerance_)
-    {
-      return list_[i];
-    }
-  }
-
-  return sensor_msgs::msg::CameraInfo::SharedPtr();
-}
-
-}  // namespace rcgccam
