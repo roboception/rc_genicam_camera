@@ -55,7 +55,6 @@
 
 namespace rcgccam
 {
-
 class GenICamCameraNode : public rclcpp::Node
 {
   using rcgc_get_srv = rc_genicam_camera_interfaces::srv::GetGenICamParameter;
@@ -67,16 +66,13 @@ public:
 
   virtual void onInit();
 
-  bool getGenICamParameter(rcgc_get_srv::Request::SharedPtr req,
-                           rcgc_get_srv::Response::SharedPtr resp);
+  bool getGenICamParameter(rcgc_get_srv::Request::SharedPtr req, rcgc_get_srv::Response::SharedPtr resp);
 
-  bool setGenICamParameter(rcgc_set_srv::Request::SharedPtr req,
-                           rcgc_set_srv::Response::SharedPtr resp);
+  bool setGenICamParameter(rcgc_set_srv::Request::SharedPtr req, rcgc_set_srv::Response::SharedPtr resp);
 
   void syncInfo(sensor_msgs::msg::CameraInfo::SharedPtr info);
 
 private:
-
   void grab(std::string device, rcg::Device::ACCESS access, std::string config);
 
   double timestamp_tolerance_;

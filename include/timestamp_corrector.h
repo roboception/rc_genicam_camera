@@ -40,7 +40,6 @@
 
 namespace rcgccam
 {
-
 /**
   This class uses the GenICam command "TimestampLatch" and the parameter
   "TimestampLatchValue" to determine the offset between the system clock and

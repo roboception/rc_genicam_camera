@@ -37,8 +37,7 @@
 int main(int argc, char** argv)
 {
   rclcpp::init(argc, argv);
-  auto genicam_camera_node = std::make_shared<rcgccam::GenICamCameraNode>(
-    "rc_genicam_camera_node");
+  auto genicam_camera_node = std::make_shared<rcgccam::GenICamCameraNode>("rc_genicam_camera_node");
 
   genicam_camera_node->onInit();
 

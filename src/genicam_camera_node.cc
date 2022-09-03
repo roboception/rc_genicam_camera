@@ -56,15 +56,14 @@
 
 namespace rcgccam
 {
-
 GenICamCameraNode::GenICamCameraNode(const std::string& node_name)
-: Node(node_name, rclcpp::NodeOptions().use_intra_process_comms(true))
+  : Node(node_name, rclcpp::NodeOptions().use_intra_process_comms(true))
 {
   timestamp_tolerance_ = 0;
   sync_tolerance_ = 0;
   rotate_ = false;
   running_ = false;
-  
+
   this->declare_parameter("frame_id", "");
   this->declare_parameter("device");
   this->declare_parameter("gev_access");
@@ -77,7 +76,6 @@ GenICamCameraNode::GenICamCameraNode(const std::string& node_name)
   this->declare_parameter("sync_tolerance", 0.019);
   this->declare_parameter("image_prefix", "");
   this->declare_parameter("rotate", false);
-
 }
 
 GenICamCameraNode::~GenICamCameraNode()
@@ -105,7 +103,7 @@ void GenICamCameraNode::onInit()
   std::string access = "control";
   std::string config = "";
   std::string calib = "";
-  int calib_id=-1;
+  int calib_id = -1;
 
   frame_id_ = this->get_parameter("frame_id").as_string();
 
@@ -127,7 +125,7 @@ void GenICamCameraNode::onInit()
       frame_id_ = "camera";
     }
 
-    int cid=-1;
+    int cid = -1;
     cid = this->get_parameter("calib_id").as_int();
 
     if (cid >= 0)
@@ -181,10 +179,7 @@ void GenICamCameraNode::onInit()
   if (sync_info.size() > 0)
   {
     sub_sync_info_ptr_ = this->create_subscription<sensor_msgs::msg::CameraInfo>(
-      sync_info,
-      rclcpp::SensorDataQoS(),
-      std::bind(&GenICamCameraNode::syncInfo, this, std::placeholders::_1)
-    );
+        sync_info, rclcpp::SensorDataQoS(), std::bind(&GenICamCameraNode::syncInfo, this, std::placeholders::_1));
 
     image_list_.setSize(25);
     image_list_.setTolerance(static_cast<uint64_t>(sync_tolerance_ * 1000000000.0));
@@ -205,7 +200,7 @@ void GenICamCameraNode::onInit()
   set_param_service_ptr_ = this->create_service<rc_genicam_camera_interfaces::srv::SetGenICamParameter>(
       "set_genicam_parameter",
       std::bind(&GenICamCameraNode::setGenICamParameter, this, std::placeholders::_1, std::placeholders::_2));
-  
+
   // initialize publishers
   caminfo_pub_.init(this->shared_from_this(), calib.c_str(), calib_id);
 
@@ -233,8 +228,7 @@ std::string loadConfig(const std::string& filename)
 {
   if (filename.size() > 0)
   {
-    RCLCPP_INFO_STREAM(rclcpp::get_logger("rc_genicam_camera_node"),
-      "Reading camera config file: " << filename);
+    RCLCPP_INFO_STREAM(rclcpp::get_logger("rc_genicam_camera_node"), "Reading camera config file: " << filename);
     std::ifstream in(filename);
     std::stringstream buffer;
 
@@ -245,8 +239,7 @@ std::string loadConfig(const std::string& filename)
     }
     else
     {
-      RCLCPP_ERROR_STREAM(rclcpp::get_logger("rc_genicam_camera_node"),
-        "Cannot load config: " << filename);
+      RCLCPP_ERROR_STREAM(rclcpp::get_logger("rc_genicam_camera_node"), "Cannot load config: " << filename);
     }
   }
 
@@ -262,10 +255,9 @@ std::string loadConfig(const std::string& filename)
 
 void applyParameters(const std::shared_ptr<GenApi::CNodeMapRef>& nodemap, const std::string& parameters)
 {
-  if(parameters.size() > 0)
+  if (parameters.size() > 0)
   {
-    RCLCPP_INFO_STREAM(rclcpp::get_logger("rc_genicam_camera_node"),
-      "Configuring camera");
+    RCLCPP_INFO_STREAM(rclcpp::get_logger("rc_genicam_camera_node"), "Configuring camera");
   }
   size_t i = 0;
 
@@ -365,8 +357,7 @@ bool GenICamCameraNode::setGenICamParameter(rcgc_set_srv::Request::SharedPtr req
 
 namespace
 {
-
-void storeImage(const std::string &prefix, const sensor_msgs::msg::Image::SharedPtr image)
+void storeImage(const std::string& prefix, const sensor_msgs::msg::Image::SharedPtr image)
 {
   // prepare file name
 
@@ -380,40 +371,38 @@ void storeImage(const std::string &prefix, const sensor_msgs::msg::Image::Shared
   // store 8 bit images
 
   if (image->encoding == sensor_msgs::image_encodings::MONO8 ||
-    image->encoding == sensor_msgs::image_encodings::BAYER_BGGR8 ||
-    image->encoding == sensor_msgs::image_encodings::BAYER_GBRG8 ||
-    image->encoding == sensor_msgs::image_encodings::BAYER_GRBG8 ||
-    image->encoding == sensor_msgs::image_encodings::BAYER_RGGB8)
+      image->encoding == sensor_msgs::image_encodings::BAYER_BGGR8 ||
+      image->encoding == sensor_msgs::image_encodings::BAYER_GBRG8 ||
+      image->encoding == sensor_msgs::image_encodings::BAYER_GRBG8 ||
+      image->encoding == sensor_msgs::image_encodings::BAYER_RGGB8)
   {
     size_t width = image->width;
     size_t height = image->height;
     uint8_t* p = reinterpret_cast<uint8_t*>(&image->data[0]);
 
-    FILE *out = fopen(name.str().c_str(), "w");
+    FILE* out = fopen(name.str().c_str(), "w");
 
     if (out)
     {
       fprintf(out, "P5\n%lu %lu\n255\n", width, height);
-      size_t n = fwrite(p, 1, width*height, out);
+      size_t n = fwrite(p, 1, width * height, out);
 
-      if (n < width*height)
+      if (n < width * height)
       {
         RCLCPP_ERROR_STREAM(rclcpp::get_logger("storeImage"),
-        "Cannot write to file " << name.str() << " ("
-          << n << " < " << width*height << ")");
+                            "Cannot write to file " << name.str() << " (" << n << " < " << width * height << ")");
       }
 
       fclose(out);
     }
     else
     {
-      RCLCPP_ERROR_STREAM(rclcpp::get_logger("storeImage"),
-      "Cannot create file " << name.str());
+      RCLCPP_ERROR_STREAM(rclcpp::get_logger("storeImage"), "Cannot create file " << name.str());
     }
   }
 }
 
-}
+}  // namespace
 
 void GenICamCameraNode::syncInfo(sensor_msgs::msg::CameraInfo::SharedPtr info)
 {
@@ -435,7 +424,7 @@ void GenICamCameraNode::syncInfo(sensor_msgs::msg::CameraInfo::SharedPtr info)
 
       if (n > 0)
       {
-        RCLCPP_WARN_STREAM(this->get_logger()," Dropped unused images: " << n);
+        RCLCPP_WARN_STREAM(this->get_logger(), " Dropped unused images: " << n);
       }
 
       // correct time stamp of image
@@ -522,8 +511,8 @@ void GenICamCameraNode::grab(std::string device, rcg::Device::ACCESS access, std
         if (!ts_host.determineOffset(rcgnodemap_))
         {
           RCLCPP_ERROR_STREAM(this->get_logger(),
-              "Cannot determine offset between host and camera clock with maximum tolerance of "
-              << timestamp_tolerance_ << " s");
+                              "Cannot determine offset between host and camera clock with maximum tolerance of "
+                                  << timestamp_tolerance_ << " s");
         }
 
         // start streaming
@@ -600,7 +589,8 @@ void GenICamCameraNode::grab(std::string device, rcg::Device::ACCESS access, std
 
                         if (image)
                         {
-                          RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 5000, "Input queue full, dropping image");
+                          RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 5000,
+                                               "Input queue full, dropping image");
                         }
 
                         image.reset();
@@ -638,8 +628,8 @@ void GenICamCameraNode::grab(std::string device, rcg::Device::ACCESS access, std
               if (!ts_host.determineOffset(rcgnodemap_))
               {
                 RCLCPP_ERROR_STREAM(this->get_logger(), "Cannot determine offset between host and camera clock with "
-                                 "maximum tolerance of "
-                                 << timestamp_tolerance_ << " s");
+                                                        "maximum tolerance of "
+                                                            << timestamp_tolerance_ << " s");
               }
             }
             else
@@ -683,7 +673,7 @@ void GenICamCameraNode::grab(std::string device, rcg::Device::ACCESS access, std
   }
   catch (...)
   {
-    RCLCPP_FATAL_STREAM(this->get_logger(),"Unknown exception");
+    RCLCPP_FATAL_STREAM(this->get_logger(), "Unknown exception");
   }
 
   running_ = false;

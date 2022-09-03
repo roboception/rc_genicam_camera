@@ -46,7 +46,6 @@ namespace rcgccam
 {
 namespace
 {
-
 /*
   Remove leading and trailing spaces from string.
 */
@@ -139,12 +138,13 @@ bool loadFile(std::map<std::string, std::string>& data, const char* name)
   Create a key like camera[.<id>].<name>
 */
 
-inline std::string createKey(const char *name, int id)
+inline std::string createKey(const char* name, int id)
 {
   std::ostringstream out;
 
   out << "camera.";
-  if (id >= 0) out << id << '.';
+  if (id >= 0)
+    out << id << '.';
   out << name;
 
   return out.str();
@@ -156,7 +156,7 @@ inline std::string createKey(const char *name, int id)
 */
 
 template <class T>
-void getValue(const std::map<std::string, std::string>& data, const std::string &key, T& value, const char* defvalue)
+void getValue(const std::map<std::string, std::string>& data, const std::string& key, T& value, const char* defvalue)
 {
   std::map<std::string, std::string>::const_iterator it = data.find(key.c_str());
   std::string v;
@@ -179,8 +179,7 @@ void getValue(const std::map<std::string, std::string>& data, const std::string 
   returned if the key does not exist.
 */
 
-bool getMatrix33(const std::map<std::string, std::string>& data, const std::string &key,
-                 double M[3][3])
+bool getMatrix33(const std::map<std::string, std::string>& data, const std::string& key, double M[3][3])
 {
   std::map<std::string, std::string>::const_iterator it = data.find(key.c_str());
   std::string v;
@@ -234,8 +233,7 @@ bool getMatrix33(const std::map<std::string, std::string>& data, const std::stri
   returned if the key does not exist.
 */
 
-bool getVector3(const std::map<std::string, std::string>& data, const std::string &key,
-                double A[3])
+bool getVector3(const std::map<std::string, std::string>& data, const std::string& key, double A[3])
 {
   std::map<std::string, std::string>::const_iterator it = data.find(key.c_str());
   std::string v;
@@ -278,13 +276,13 @@ bool getVector3(const std::map<std::string, std::string>& data, const std::strin
 
 inline void mulMatrix33Matrix33(double ret[3][3], double A[3][3], double B[3][3])
 {
-  for (int k=0; k<3; k++)
+  for (int k = 0; k < 3; k++)
   {
-    for (int i=0; i<3; i++)
+    for (int i = 0; i < 3; i++)
     {
       ret[k][i] = 0;
 
-      for (int j=0; j<3; j++)
+      for (int j = 0; j < 3; j++)
       {
         ret[k][i] += A[k][j] * B[j][i];
       }
@@ -294,10 +292,10 @@ inline void mulMatrix33Matrix33(double ret[3][3], double A[3][3], double B[3][3]
 
 inline void mulMatrix33Vector3(double ret[3], double M[3][3], double V[3])
 {
-  for (int k=0; k<3; k++)
+  for (int k = 0; k < 3; k++)
   {
     ret[k] = 0;
-    for (int i=0; i<3; i++)
+    for (int i = 0; i < 3; i++)
     {
       ret[k] += M[k][i] * V[i];
     }
@@ -345,10 +343,7 @@ void CameraInfoPublisher::init(rclcpp::Node::SharedPtr node, const char* calib_f
 {
   // advertise topic
 
-  pub_ptr_ = node->create_publisher<sensor_msgs::msg::CameraInfo>(
-    "camera_info",
-    rclcpp::SensorDataQoS()
-  );
+  pub_ptr_ = node->create_publisher<sensor_msgs::msg::CameraInfo>("camera_info", rclcpp::SensorDataQoS());
 
   // check id
 
@@ -435,7 +430,7 @@ void CameraInfoPublisher::init(rclcpp::Node::SharedPtr node, const char* calib_f
           double A0[3][3], A1[3][3];
           if (getMatrix33(data, createKey("A", 0), A0) && getMatrix33(data, createKey("A", 1), A1))
           {
-            f = (A0[0][0] + A0[1][1] + A1[0][0] + A1[1][1])/4;
+            f = (A0[0][0] + A0[1][1] + A1[0][0] + A1[1][1]) / 4;
           }
           else
           {
@@ -446,7 +441,7 @@ void CameraInfoPublisher::init(rclcpp::Node::SharedPtr node, const char* calib_f
         }
         else
         {
-          f = (A[0][0] + A[1][1])/2;
+          f = (A[0][0] + A[1][1]) / 2;
         }
       }
 
@@ -490,12 +485,12 @@ void CameraInfoPublisher::init(rclcpp::Node::SharedPtr node, const char* calib_f
 
         double Rrect[3][3];
 
-        Rrect[0][0] = T[0]/t;
-        Rrect[1][0] = T[1]/t;
-        Rrect[2][0] = T[2]/t;
+        Rrect[0][0] = T[0] / t;
+        Rrect[1][0] = T[1] / t;
+        Rrect[2][0] = T[2] / t;
 
-        Rrect[0][1] = -T[1]/l;
-        Rrect[1][1] = T[0]/l;
+        Rrect[0][1] = -T[1] / l;
+        Rrect[1][1] = T[0] / l;
         Rrect[2][1] = 0;
 
         Rrect[0][2] = Rrect[1][0] * Rrect[2][1] - Rrect[2][0] * Rrect[1][1];
@@ -529,11 +524,11 @@ void CameraInfoPublisher::init(rclcpp::Node::SharedPtr node, const char* calib_f
 
       info_.p[0] = f;
       info_.p[1] = 0;
-      info_.p[2] = info_.width/2.0;
+      info_.p[2] = info_.width / 2.0;
       info_.p[3] = 0;
       info_.p[4] = 0;
       info_.p[5] = f;
-      info_.p[6] = info_.height/2.0;
+      info_.p[6] = info_.height / 2.0;
       info_.p[7] = 0;
       info_.p[8] = 0;
       info_.p[9] = 0;
