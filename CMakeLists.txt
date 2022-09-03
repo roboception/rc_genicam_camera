@@ -78,8 +78,8 @@ install(TARGETS ${PROJECT_NAME}_node
   DESTINATION lib/${PROJECT_NAME}
 )
 
-# Install launch files.
-install(DIRECTORY launch
+# Install launch and config files.
+install(DIRECTORY launch config
   DESTINATION share/${PROJECT_NAME}/
 )
 
